@@ -124,6 +124,8 @@ let CompromiseShare(s) = event LeakShare('null'); 0
 export queries:
  "
 set preciseActions=true.
+set simplifyProcess = false.
+set reconstructTrace = false.
 "
 
 #ifdef NonRepudiation 
@@ -173,8 +175,8 @@ not attacker (new Y_1 ).
 
 export queries:
 "
-axiom k:bitstring; event(Share( k )) && attacker( k ) ==> event(LeakShare(k)).
-axiom k:bitstring; event(ShareLT( k )) && attacker( k ) ==> event(Leak(k)).
+axiom k:bitstring; event(eShare( k )) && attacker( k ) ==> event(eLeakShare(k)).
+axiom k:bitstring; event(eShareLT( k )) && attacker( k ) ==> event(eLeak(k)).
 "
 
 #endif
@@ -185,7 +187,7 @@ axiom k:bitstring; event(ShareLT( k )) && attacker( k ) ==> event(Leak(k)).
 export queries:
 "
 (* can be used to restrict methods *)
-restriction m:bitstring; event(MethodOk(m)) ==> m=method_zero.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_zero.
 "
 
 restriction method_zero:
@@ -199,7 +201,7 @@ restriction method_zero:
 export queries:
 "
 (* can be used to restrict methods *)
-restriction m:bitstring; event(MethodOk(m)) ==> m=method_one.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_one.
 "
 
 restriction method_one:
@@ -212,7 +214,7 @@ restriction method_one:
 export queries:
 "
 (* can be used to restrict methods *)
-restriction m:bitstring; event(MethodOk(m)) ==> m=method_two.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_two.
 "
 
 restriction method_two:
@@ -225,7 +227,8 @@ restriction method_two:
 export queries:
 "
 (* can be used to restrict methods *)
-restriction m:bitstring; event(MethodOk(m)) ==> m=method_three.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_three.
+"
 "
 
 restriction method_three:

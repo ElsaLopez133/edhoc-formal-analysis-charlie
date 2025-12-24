@@ -108,29 +108,30 @@ Either of these provide forward secrecy, in the sense that compromise of the
 //      its own long term key was leaked
 //      other session leys were leaked
 //      other ephemeral keys were leaked  (-D=LeakShare)
-lemma secretR: 
-   "All cid m pkI pkR k4 ko y gx #i #j #k. AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@i & KU(ko)@j & Honest(pkI)@k // If the attacker learns the key established (according to R) with a honest initiator
-    ==> (Ex #t.
-        (Compromise(pkI)@t & t < i) )  // then the initiator's lt key was compromised before
-        | 
-        (Ex #t. LeakSessionKey(ko)@t  )        // or the session key was leaked
-        | 
-        (Ex #t. LeakShare(y)@t  )        // or the responder share was leaked
-        | 
-        (Ex #t. LeakShare(gx)@t  )        // or the initiator share was leaked	
-    "
 
-lemma secretI: 
-    "All m pkI pkR k3 k4 ko x gy cid #i #j  #k. (AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & KU(ko)@j & Honest(pkR)@k)
-    ==>(Ex #t.
-        (Compromise(pkR)@t & t < i) )  // then the responder lt key was compromised before
-        | 
-        (Ex #t. LeakSessionKey(ko)@t  )        // or the session key was leaked
-        | 
-        (Ex #t. LeakShare(gy)@t  )        // or the responder share was leaked
-        | 
-        (Ex #t. LeakShare(x)@t  )        // or the initiator share was leaked		
-	"
+// lemma secretR: 
+//    "All cid m pkI pkR k4 ko y gx #i #j #k. AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@i & KU(ko)@j & Honest(pkI)@k // If the attacker learns the key established (according to R) with a honest initiator
+//     ==> (Ex #t.
+//         (Compromise(pkI)@t & t < i) )  // then the initiator's lt key was compromised before
+//         | 
+//         (Ex #t. LeakSessionKey(ko)@t  )        // or the session key was leaked
+//         | 
+//         (Ex #t. LeakShare(y)@t  )        // or the responder share was leaked
+//         | 
+//         (Ex #t. LeakShare(gx)@t  )        // or the initiator share was leaked	
+//     "
+
+// lemma secretI: 
+//     "All m pkI pkR k3 k4 ko x gy cid #i #j  #k. (AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & KU(ko)@j & Honest(pkR)@k)
+//     ==>(Ex #t.
+//         (Compromise(pkR)@t & t < i) )  // then the responder lt key was compromised before
+//         | 
+//         (Ex #t. LeakSessionKey(ko)@t  )        // or the session key was leaked
+//         | 
+//         (Ex #t. LeakShare(gy)@t  )        // or the responder share was leaked
+//         | 
+//         (Ex #t. LeakShare(x)@t  )        // or the initiator share was leaked		
+// 	"
 
 /*
 
@@ -241,26 +242,24 @@ Changes in message_1 and
 
 */
 
+// lemma data_authentication_I_to_R: 
+//     "All method pkI pkR TH_2 TH_3 TH_4 suitesI EAD_1 EAD_2 EAD_3 m1 p2 p3 #i #j x gy PRK_out.
+//      AcceptIData(PRK_out,method,pkI,pkR,x,gy,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, p2, p3>)@i
+//      & Honest(pkR)@j ==>    
+//       (Ex #l. l<i & SendRData(method,pkR,<TH_2,suitesI, EAD_1, EAD_2, m1, p2>)@l)
+//     | (Ex #l. l<i & Compromise(pkR)@l)
+//     |  (Ex #l.  LeakShare(x)@l & (method=method_two | method=method_three))      
+//        "
 
 
-lemma data_authentication_I_to_R: 
-    "All method pkI pkR TH_2 TH_3 TH_4 suitesI EAD_1 EAD_2 EAD_3 m1 p2 p3 #i #j x gy PRK_out.
-     AcceptIData(PRK_out,method,pkI,pkR,x,gy,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, p2, p3>)@i
-     & Honest(pkR)@j ==>    
-      (Ex #l. l<i & SendRData(method,pkR,<TH_2,suitesI, EAD_1, EAD_2, m1, p2>)@l)
-    | (Ex #l. l<i & Compromise(pkR)@l)
-    |  (Ex #l.  LeakShare(x)@l & (method=method_two | method=method_three))      
-       "
-
-
-lemma data_authentication_R_to_I: 
-    "All method y gx pkI pkR TH_2 TH_3 TH_4 suitesI EAD_1 EAD_2 EAD_3 m1 p2 p3 #i #j PRK_out.
-     AcceptRData(PRK_out,method,pkI,pkR,y,gx,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, p2, p3>)@i
-     & Honest(pkI)@j ==>    
-      (Ex #l gy x. l<i & AcceptIData(PRK_out,method,pkI,pkR,x,gy,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, p2, p3>)@l)
-    | (Ex #l. l<i & Compromise(pkI)@l)
-    | (Ex #l.  LeakShare(y)@l & (method=method_two | method=method_three))
-       "
+// lemma data_authentication_R_to_I: 
+//     "All method y gx pkI pkR TH_2 TH_3 TH_4 suitesI EAD_1 EAD_2 EAD_3 m1 p2 p3 #i #j PRK_out.
+//      AcceptRData(PRK_out,method,pkI,pkR,y,gx,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, p2, p3>)@i
+//      & Honest(pkI)@j ==>    
+//       (Ex #l gy x. l<i & AcceptIData(PRK_out,method,pkI,pkR,x,gy,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, p2, p3>)@l)
+//     | (Ex #l. l<i & Compromise(pkI)@l)
+//     | (Ex #l.  LeakShare(y)@l & (method=method_two | method=method_three))
+//        "
 
 // *******************************************************************
 // ************** Non Repudiation  ***********************************
@@ -334,3 +333,54 @@ lemma authIR_unique:
     "All m pkI pkR k3 k4 ko x gy x2 gy2 cid #i #j.      
      AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & AcceptI(cid,m,pkI,pkR,k3,k4,ko,x2,gy2)@j  ==> 
      #i = #j"
+
+// ******************************************************************
+// ************** Attestation  **************************************
+// ******************************************************************
+
+// Attestation freshness 
+lemma AttestationEvidenceFreshness:
+  "All m credI1 pkI1 pkI2 pkR1 pkR2 nonce meas1 meas2 sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
+    AttestationAcceptedR(cid1, m, pkI1, pkR1, sig1, nonce, meas1, y1, gxy1, pk_attkey1)@i
+    &
+    AttestationAcceptedR(cid2, m, pkI2, pkR2, sig2, nonce, meas2, y2, gxy2, pk_attkey2)@j
+    &
+    HonestNonce(nonce)@k
+  ==> 
+  (#i = #j)
+  &
+  (#k < #i)
+  "
+
+// Attestation integrity -> the evidence is not modified, so signature is correct
+// PASSED
+lemma AttestationEvidenceIntegrity:
+  "All m pkI pkR sig nonce meas cidR psk ak x y gx gxy pk_attkey prk #i #j #k #l.
+    VerifiedSignatureR(cidR,m, pkI, pkR, nonce, meas, sig, y, gxy)@i
+  ==> 
+  (Ex cidI ak x #t. AttestationGeneratedI(cidI, m, pkI, pkR, nonce, meas, sig, ak, x, gxy)@t & t < i)
+  |
+  (Ex #t. LeakAttKey(ak)@t)
+  |
+  (Ex #t.  Compromise(pkI)@t)
+  |
+  (Ex #t.  Compromise(pkR)@t)
+  "
+
+// Agreement of parameters for attestation and authentication
+// TODO
+
+lemma ChannelBinding:
+"All cid m pkI pkR gx y1 y2 prk prk4 gxy1 gxy2 pk_attkey sig meas nonce ak #i #j #l #k #u #c.
+    AttestationAcceptedR(cid,m, pkI, pkR, sig, nonce, meas, y1, gxy1, pk_attkey)@i 
+    &
+    AcceptRRA(cid, m, pkI, pkR, prk4, prk, y2, gx, gxy2)@j
+  ==>
+    (Ex cidI prk3 gy x ak #t. AcceptIRA(cid, m, pkI, pkR, prk3, prk4, prk, x, gy, gxy2, ak)@t
+    & t < j
+    & gxy1 = gxy2)
+    |
+    (Ex #t. Compromise(pkI)@t )
+    |
+    (Ex #t. Compromise(pkR)@t )
+  "
