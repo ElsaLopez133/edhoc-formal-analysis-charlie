@@ -158,7 +158,7 @@ query cid:bitstring, gy:bitstring, k3:bitstring, k4:bitstring,
   ((event(eHonest( pkI ))@t) && (i = j)))
 .
 (*data_authentication_I_to_R*)
-query EAD_1:bitstring, EAD_2:bitstring, EAD_3:bitstring,
+(* query EAD_1:bitstring, EAD_2:bitstring, EAD_3:bitstring,
       PRK_out:bitstring, TH_2:bitstring, TH_3:bitstring, TH_4:bitstring,
       gy:bitstring, m1:bitstring, method:bitstring, p2:bitstring, p3:bitstring,
       pkI:bitstring, pkR:bitstring, suitesI:bitstring, x:bitstring, i:time,
@@ -174,9 +174,9 @@ query EAD_1:bitstring, EAD_2:bitstring, EAD_3:bitstring,
    ((l < i) && (event(eCompromise( pkR ))@l))) ||
   ((event(eLeakShare( x ))@l) &&
    ((method = method_two) || (method = method_three))))
-.
+. *)
 (*data_authentication_R_to_I*)
-query EAD_1:bitstring, EAD_2:bitstring, EAD_3:bitstring,
+(* query EAD_1:bitstring, EAD_2:bitstring, EAD_3:bitstring,
       PRK_out:bitstring, TH_2:bitstring, TH_3:bitstring, TH_4:bitstring,
       gx:bitstring, gy:bitstring, m1:bitstring, method:bitstring, p2:bitstring,
       p3:bitstring, pkI:bitstring, pkR:bitstring, suitesI:bitstring,
@@ -192,7 +192,7 @@ query EAD_1:bitstring, EAD_2:bitstring, EAD_3:bitstring,
    ((l < i) && (event(eCompromise( pkI ))@l))) ||
   ((event(eLeakShare( y ))@l) &&
    ((method = method_two) || (method = method_three))))
-.
+. *)
 (*authRI_unique*)
 query cid:bitstring, gx1:bitstring, gx2:bitstring, k4:bitstring,
       ko:bitstring, m:bitstring, pkI:bitstring, pkR:bitstring, y1:bitstring,
