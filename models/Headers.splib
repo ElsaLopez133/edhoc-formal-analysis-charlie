@@ -229,7 +229,6 @@ export queries:
 (* can be used to restrict methods *)
 restriction m:bitstring; event(eMethodOk(m)) ==> m=method_three.
 "
-"
 
 restriction method_three:
  "All x #i. MethodOk(x)@i ==> x=method_three"

@@ -69,8 +69,8 @@ equations: get_DH_cred(id(x,y,z))=y,
 
 
 
-
-
+// new adding for test
+#define MethodThree
 
 #include "Headers.splib"
 
@@ -180,9 +180,9 @@ let I(~cid, ~skI, ~I, ~ak, ID_CRED_R) =
 			if (verify(SIGNATURE_or_MAC_2,<'Signature1',ID_CRED_R,TH_2,pkR,EAD_2,MAC_2>, pkR) = sigtrue) then(
 
 				// Construction of EAD_3
-				let signature = sign(<'Signature1',CRED_I, nonceR>,'rep', ~ak) in
-				let EAD_3 = <CRED_I, nonceR, signature> in
-				event AttestationGeneratedI(~cid, method_zero, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
+				let signature = sign(<'Signature1',ID_CRED_I, nonceR>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_I, nonceR, signature> in
+				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -222,9 +222,9 @@ let I(~cid, ~skI, ~I, ~ak, ID_CRED_R) =
 	    	    
 	    	if (SIGNATURE_or_MAC_2 = MAC_2) then (
 				// Construction of EAD_3
-				let signature = sign(<'Signature1',CRED_I, nonceR>,'rep', ~ak) in
-				let EAD_3 = <CRED_I, nonceR, signature> in
-				event AttestationGeneratedI(~cid, method_one, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
+				let signature = sign(<'Signature1',ID_CRED_I, nonceR>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_I, nonceR, signature> in
+				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -262,9 +262,9 @@ let I(~cid, ~skI, ~I, ~ak, ID_CRED_R) =
 			
 			if (verify(SIGNATURE_or_MAC_2,<'Signature1',ID_CRED_R,TH_2,pkR,EAD_2,MAC_2>, pkR) = sigtrue) then(
 				// Construction of EAD_3
-				let signature = sign(<'Signature1',CRED_I, nonceR>,'rep', ~ak) in
-				let EAD_3 = <CRED_I, nonceR, signature> in
-				event AttestationGeneratedI(~cid, method_two, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
+				let signature = sign(<'Signature1',ID_CRED_I, nonceR>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_I, nonceR, signature> in
+				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -308,9 +308,9 @@ let I(~cid, ~skI, ~I, ~ak, ID_CRED_R) =
 	    	    
 	    	if (SIGNATURE_or_MAC_2 = MAC_2) then (
 				// Construction of EAD_3
-				let signature = sign(<'Signature1',CRED_I, nonceR>,'rep', ~ak) in
-				let EAD_3 = <CRED_I, nonceR, signature> in
-				event AttestationGeneratedI(~cid, method_three, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
+				let signature = sign(<'Signature1',ID_CRED_I, nonceR>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_I, nonceR, signature> in
+				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -410,9 +410,9 @@ let R(~cid, ~skR,~R) =
 			if (ID_CRED_R = check_cred(ID_CRED_I)) then ( // Not in the standard: we test if we did not receive our own cred
 		   		0
 			) else (  
-				let <CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
-				if (verify(signature_in, <'Signature1',CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
-					event VerifiedSignatureR(~cid, method_zero, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
+				let <ID_CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
+				if (verify(signature_in, <'Signature1',ID_CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
+					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_zero, pkI, pkR, nonceR_in, signature_in);
 						event AttestationAcceptedR(~cid, method_zero, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
@@ -480,9 +480,9 @@ let R(~cid, ~skR,~R) =
 		   		0
 			)
 			else (
-				let <CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
-				if (verify(signature_in, <'Signature1',CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
-					event VerifiedSignatureR(~cid, method_one, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
+				let <ID_CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
+				if (verify(signature_in, <'Signature1',ID_CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
+					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_one, pkI, pkR, nonceR_in, signature_in);
 						event AttestationAcceptedR(~cid, method_one, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
@@ -552,9 +552,9 @@ let R(~cid, ~skR,~R) =
 		   		0
 			) 
 			else (
-				let <CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
-				if (verify(signature_in, <'Signature1',CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
-					event VerifiedSignatureR(~cid, method_two, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
+				let <ID_CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
+				if (verify(signature_in, <'Signature1',ID_CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
+					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_two, pkI, pkR, nonceR_in, signature_in);
 						event AttestationAcceptedR(~cid, method_two, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
@@ -628,9 +628,9 @@ let R(~cid, ~skR,~R) =
 		   		0
 			) 
 			else (
-				let <CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
-				if (verify(signature_in, <'Signature1',CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
-					event VerifiedSignatureR(~cid, method_three, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
+				let <ID_CRED_I_in, nonceR_in, signature_in> = EAD_3 in        
+				if (verify(signature_in, <'Signature1',ID_CRED_I_in, nonceR_in>, pk_attkey) = sigtrue) then (
+					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_three, pkI, pkR, nonceR_in, signature_in);
 						event AttestationAcceptedR(~cid, method_three, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);

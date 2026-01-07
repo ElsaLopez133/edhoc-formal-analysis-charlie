@@ -57,24 +57,27 @@ lemma executableI_method_0[output=[proverif]]: // sanity check
 
 // The following lemmas do not cover any explicit security property from the draft, but help the provers
 
-#ifdef  NonRepudiation  | LeakShare
-// the share are not secret in this scenario
-#else
+// yuxuan starts deleting
 
-lemma secretShares[reuse]: //secrecy of the key
-   "All k #i #j. Share(k)@i & KU(k)@j // the ephemeral, secret DH share cannot be known to the attacker
-    ==> F"
+// #ifdef  NonRepudiation  | LeakShare
+// // the share are not secret in this scenario
+// #else
+
+// lemma secretShares[reuse]: //secrecy of the key
+//    "All k #i #j. Share(k)@i & KU(k)@j // the ephemeral, secret DH share cannot be known to the attacker
+//     ==> F"
     
-#endif
+// #endif
 
-#ifdef not KEM
+// #ifdef not KEM
 
-lemma secretSharesLT[reuse]: //secrecy of the key
-   "All k #i #j. ShareLT(k)@i & KU(k)@j   // if a longterm DH share is known to the attacker
-    ==>  Ex #t. Leak(k)@t"                // it must have been leaked explicitly
+// lemma secretSharesLT[reuse]: //secrecy of the key
+//    "All k #i #j. ShareLT(k)@i & KU(k)@j   // if a longterm DH share is known to the attacker
+//     ==>  Ex #t. Leak(k)@t"                // it must have been leaked explicitly
 
-#endif
+// #endif
 
+// yuxuan ends deleting
 
 // *********************************************************************
 // ************** Confidentiality  *************************************
@@ -343,10 +346,10 @@ This crucially requires that even with a man in the middle, or with a non truste
 
 // Attestation freshness 
 // lemma AttestationEvidenceFreshness:
-//   "All m credI1 pkI1 pkI2 pkR1 pkR2 nonce meas1 meas2 sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
-//     AttestationAcceptedR(cid1, m, pkI1, pkR1, sig1, nonce, meas1, y1, gxy1, pk_attkey1)@i
+//   "All m pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
+//     AttestationAcceptedR(cid1, m, pkI1, pkR1, sig1, nonce, y1, gxy1, pk_attkey1)@i
 //     &
-//     AttestationAcceptedR(cid2, m, pkI2, pkR2, sig2, nonce, meas2, y2, gxy2, pk_attkey2)@j
+//     AttestationAcceptedR(cid2, m, pkI2, pkR2, sig2, nonce, y2, gxy2, pk_attkey2)@j
 //     &
 //     HonestNonce(nonce)@k
 //   ==> 
@@ -357,35 +360,38 @@ This crucially requires that even with a man in the middle, or with a non truste
 
 // Attestation integrity -> the evidence is not modified, so signature is correct
 // PASSED
-lemma AttestationEvidenceIntegrity:
-  "All m pkI pkR sig nonce cidR gxy y #i.
-    VerifiedSignatureR(cidR, m, pkI, pkR, nonce, sig, y, gxy)@i
-  ==> 
-  (Ex cidI ak x #t. 
-    AttestationGeneratedI(cidI, m, pkI, pkR, nonce, sig, ak, x, gxy)@t 
-    & t < i)
-  // |
-  // (Ex ak #t. LeakAttKey(ak)@t)
-  // |
-  // (Ex #t.  Compromise(pkI)@t)
-  // |
-  // (Ex #t.  Compromise(pkR)@t)
-  "
+// lemma AttestationEvidenceIntegrity:
+//   "All cidR pkI pkR nonce sig y gxy #i #j.
+//     VerifiedSignatureR(cidR, pkI, pkR, nonce, sig, y, gxy)@i
+//     &
+//     Honest(pkI)@j
+//   ==> 
+//   (Ex cidI ak x #t. 
+//     AttestationGeneratedI(cidI, pkI, pkR, nonce, sig, ak, x, gxy)@t 
+//     & t < i)
+//   |
+//   (Ex ak #t. LeakAttKey(ak)@t)
+//   |
+//   (Ex #t.  Compromise(pkI)@t)
+//   |
+//   (Ex #t.  Compromise(pkR)@t)
+//   "
 
 // Agreement of parameters for attestation and authentication
 // TODO
 
-// lemma ChannelBinding:
-// "All cid m pkI pkR gx y1 y2 prk prk4 gxy1 gxy2 pk_attkey sig meas nonce ak #i #j #l #k #u #c.
-//     AttestationAcceptedR(cid,m, pkI, pkR, sig, nonce, meas, y1, gxy1, pk_attkey)@i 
-//     &
-//     AcceptRRA(cid, m, pkI, pkR, prk4, prk, y2, gx, gxy2)@j
-//   ==>
-//     (Ex cidI prk3 gy x ak #t. AcceptIRA(cid, m, pkI, pkR, prk3, prk4, prk, x, gy, gxy2, ak)@t
-//     & t < j
-//     & gxy1 = gxy2)
-//     |
-//     (Ex #t. Compromise(pkI)@t )
-//     |
-//     (Ex #t. Compromise(pkR)@t )
-//   "
+
+lemma ChannelBinding:
+"All cid m pkI pkR gx y1 y2 prk prk4 gxy1 gxy2 pk_attkey sig nonce ak #i #j #l #k #u #c.
+    AttestationAcceptedR(cid,m, pkI, pkR, sig, nonce, y1, gxy1, pk_attkey)@i 
+    &
+    AcceptRRA(cid, m, pkI, pkR, prk4, prk, y2, gx, gxy2)@j
+  ==>
+    (Ex cidI prk3 gy x ak #t. AcceptIRA(cid, m, pkI, pkR, prk3, prk4, prk, x, gy, gxy2, ak)@t
+    & t < j
+    & gxy1 = gxy2)
+    |
+    (Ex #t. Compromise(pkI)@t )
+    |
+    (Ex #t. Compromise(pkR)@t )
+  "
