@@ -397,20 +397,77 @@ This crucially requires that even with a man in the middle, or with a non truste
 
 
 // lemma ChannelBinding:
-// "All cidI cidR pkI pkR nonce sig gxy gxyI th3I th3R #i #j #k.
-//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3R)@i 
+// "All cidI cidR m pkI pkR nonce sig gxy gxyI y th3I th3R ak pk_attkey #i #j #k #m #n.
+//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3R, pk_attkey)@i
+//     &
+//     FinishR(cidR, m, pkI, pkR, gxy, y, nonce, sig, pk_attkey)@n
+//     &
+//     Honest(pkI)@j
+//     & 
+//     Honest(pkR)@k
+//     &
+//     Honest(ak)@m
 //   ==>
-//     (Ex cidI ak x gxyI #t. SentbyI(cidI, pkI, pkR, nonce, sig, gxyI, th3I)@t
+//     (Ex #t. SentByI(cidI, pkI, pkR, nonce, sig, gxy, th3I, ak, pk_attkey)@t
 //     & 
 //     th3I = th3R
 //     &
-//     gxy = gxyI
-//     &
 //     t < i)
 //     |
+//     (Ex #t. LeakAttKey(ak)@t )
+//     |
+//     (Ex pkI #t. Compromise(pkI)@t  )
+//     |
+//     (Ex pkR #t. Compromise(pkR)@t )
+//   "
+
+  // 这个竟然是 true !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!但是我最后面那个pkR compromise忘了给comment掉了
+  // comment diao zhi hou，跑出来也是true
+  // with TH_3, no measurements, if no honest pkI ,or no compromise pki, then it will be cannot be proved. if adding honest pki, then it is true
+//   lemma ChannelBinding:
+// "All cidI cidR pkI pkR nonce sig gxy gxyI th3I th3R ak pk_attkey #i #j #k.
+//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3R, pk_attkey)@i 
+//     // &
+//     // Honest(pkI)@j
+//     // & 
+//     // Honest(pkR)@k
+//   ==>
+//     (Ex #t. SentByI(cidI, pkI, pkR, nonce, sig, gxy, th3I, ak, pk_attkey)@t
+//     & 
+//     th3I = th3R
+//     &
+//     t < i)
+//     // |
+//     // (Ex pkI pkR #t #l. Compromise(pkI)@t 
+//     // & Compromise(pkR)@l )
+//     // |
 //     // (Ex pkI #t. Compromise(pkI)@t  )
-//     (Ex pkI pkR #t #l. Compromise(pkI)@t 
-//     & Compromise(pkR)@l )
 //     // |
 //     // (Ex pkR #t. Compromise(pkR)@t )
 //   "
+
+
+  // 我在signature 里加上了 TH_4, after the measurement_hash, let TH_4 be the last variable in the signature, and I added the measurements back in the model, then I got true with this following lemma
+//     lemma ChannelBinding:
+// "All cidI cidR pkI pkR nonce sig gxy gxyI th3I th3R ak pk_attkey #i.
+//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3R, pk_attkey)@i 
+//   ==>
+//     (Ex #t. SentByI(cidI, pkI, pkR, nonce, sig, gxy, th3I, ak, pk_attkey)@t
+//     // & 
+//     // th3I = th3R
+//     &
+//     t < i)
+
+//   "
+
+    lemma ChannelBinding:
+"All cidI cidR pkI1 pkR1 pkI2 pkR2 nonce sig gxy1 gxy2 th3I th3R ak pk_attkey #i.
+    AttestationAcceptedR(cidR, pkI1, pkR1, nonce, sig, gxy1, th3R, pk_attkey)@i 
+  ==>
+    (Ex #t. SentByI(cidI, pkI2, pkR2, nonce, sig, gxy2, th3I, ak, pk_attkey)@t
+    // & 
+    // th3I = th3R
+    &
+    t < i)
+
+  "

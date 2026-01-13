@@ -166,8 +166,8 @@ query th3:bitstring, pkI:bitstring, proofnr:bitstring, i:time,
 
 export queries:
 "
-not attacker (new X_1 ).
-not attacker (new Y_1 ).
+// not attacker (new X_1 ).
+// not attacker (new Y_1 ).
 
 "
 
