@@ -57,24 +57,27 @@ lemma executableI_method_0[output=[proverif]]: // sanity check
 
 // The following lemmas do not cover any explicit security property from the draft, but help the provers
 
-#ifdef  NonRepudiation  | LeakShare
-// the share are not secret in this scenario
-#else
+// yuxuan starts deleting
 
-lemma secretShares[reuse]: //secrecy of the key
-   "All k #i #j. Share(k)@i & KU(k)@j // the ephemeral, secret DH share cannot be known to the attacker
-    ==> F"
+// #ifdef  NonRepudiation  | LeakShare
+// // the share are not secret in this scenario
+// #else
+
+// lemma secretShares[reuse]: //secrecy of the key
+//    "All k #i #j. Share(k)@i & KU(k)@j // the ephemeral, secret DH share cannot be known to the attacker
+//     ==> F"
     
-#endif
+// #endif
 
-#ifdef not KEM
+// #ifdef not KEM
 
-lemma secretSharesLT[reuse]: //secrecy of the key
-   "All k #i #j. ShareLT(k)@i & KU(k)@j   // if a longterm DH share is known to the attacker
-    ==>  Ex #t. Leak(k)@t"                // it must have been leaked explicitly
+// lemma secretSharesLT[reuse]: //secrecy of the key
+//    "All k #i #j. ShareLT(k)@i & KU(k)@j   // if a longterm DH share is known to the attacker
+//     ==>  Ex #t. Leak(k)@t"                // it must have been leaked explicitly
 
-#endif
+// #endif
 
+// yuxuan ends deleting
 
 // *********************************************************************
 // ************** Confidentiality  *************************************
@@ -175,54 +178,55 @@ After verifying message_3, the Responder is assured that
 */
 
 // Non injective authentication
-lemma honestauthRI_non_inj:  
-    "All cid m pkI pkR k4 ko y gx #i #k. AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@i  & Honest(pkI)@k ==>    
-       (Ex #t x gy k3 ko2 cid2. t<i & AcceptI(cid2,m,pkI,pkR,k3,k4,ko2,x,gy)@t) // honest case
-       |  (Ex #t.  Compromise(pkI)@t & t<i)   // the initiator long term key was compromised before the completion of the exchange
-       |  (Ex #t.  LeakShare(y)@t & (m=method_two | m =method_three)
-       // the responder share was leaked, and the initiator is not authenticating with sig
-           )  
+// yuxuan starts deleting
+// lemma honestauthRI_non_inj:  
+//     "All cid m pkI pkR k4 ko y gx #i #k. AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@i  & Honest(pkI)@k ==>    
+//        (Ex #t x gy k3 ko2 cid2. t<i & AcceptI(cid2,m,pkI,pkR,k3,k4,ko2,x,gy)@t) // honest case
+//        |  (Ex #t.  Compromise(pkI)@t & t<i)   // the initiator long term key was compromised before the completion of the exchange
+//        |  (Ex #t.  LeakShare(y)@t & (m=method_two | m =method_three)
+//        // the responder share was leaked, and the initiator is not authenticating with sig
+//            )  
 
-    "
+//     "
 
-// Uniqueness implies injective authentication
-lemma honestauthRI_unique:  
-    "All cid m pkI pkR k4 ko y gx #i #j #k. 
-     (
-     AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@i & AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@j & Honest(pkI)@k  ==> 
-     (Ex #t.  Compromise(pkI)@t)
-     |  (Ex #t.  LeakShare(y)@t & (m=method_two | m =method_three)
+// // Uniqueness implies injective authentication
+// lemma honestauthRI_unique:  
+//     "All cid m pkI pkR k4 ko y gx #i #j #k. 
+//      (
+//      AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@i & AcceptR(cid,m,pkI,pkR,k4,ko,y,gx)@j & Honest(pkI)@k  ==> 
+//      (Ex #t.  Compromise(pkI)@t)
+//      |  (Ex #t.  LeakShare(y)@t & (m=method_two | m =method_three)
 
-           )   // the responder share was leaked, and the initiator is not authenticating with sig     
-     |
-     (Ex #t. Honest(pkI)@t &    #i = #j) // hack, dumb honest event added due to restrictions on exportable lemmas to proverif
-     )"
-
-
+//            )   // the responder share was leaked, and the initiator is not authenticating with sig     
+//      |
+//      (Ex #t. Honest(pkI)@t &    #i = #j) // hack, dumb honest event added due to restrictions on exportable lemmas to proverif
+//      )"
 
 
-// The following lemmas do not correspond to any security property mentioned in the draft
-// They correspond to the implicit autentication on the other side, which is made explicit after a key confirmation
-lemma honestauthIR_non_inj:  // should be true
-    "All m pkI pkR k3 k4 ko gy x cid #i #k. AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & Honest(pkR)@k ==>
-    (
-       (Ex #j y gx cid2. j<i & DerivedR(cid2,pkR,k3,y,gx)@j)
-      |  (Ex #t.  Compromise(pkR)@t)
-     |  (Ex #t.  LeakShare(x)@t & (m=method_one | m =method_three)      )
-    )"
 
-lemma honestauthIR_unique:  
-    "All m pkI pkR k3 k4 ko x gy cid #i #j #k. 
-     (
-     AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@j & Honest(pkI)@k  ==> 
-     (Ex #t.  Compromise(pkI)@t)
-     |  (Ex #t.  LeakShare(x)@t & (m=method_one | m =method_three)
 
-           )   // the responder share was leaked, and the initiator is not authenticating with sig     
-     |
-     (Ex #t. Honest(pkI)@t &    #i = #j) // hack, dumb honest event added due to restrictions on exportable lemmas to proverif
-     )"
+// // The following lemmas do not correspond to any security property mentioned in the draft
+// // They correspond to the implicit autentication on the other side, which is made explicit after a key confirmation
+// lemma honestauthIR_non_inj:  // should be true
+//     "All m pkI pkR k3 k4 ko gy x cid #i #k. AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & Honest(pkR)@k ==>
+//     (
+//        (Ex #j y gx cid2. j<i & DerivedR(cid2,pkR,k3,y,gx)@j)
+//       |  (Ex #t.  Compromise(pkR)@t)
+//      |  (Ex #t.  LeakShare(x)@t & (m=method_one | m =method_three)      )
+//     )"
 
+// lemma honestauthIR_unique:  
+//     "All m pkI pkR k3 k4 ko x gy cid #i #j #k. 
+//      (
+//      AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@j & Honest(pkI)@k  ==> 
+//      (Ex #t.  Compromise(pkI)@t)
+//      |  (Ex #t.  LeakShare(x)@t & (m=method_one | m =method_three)
+
+//            )   // the responder share was leaked, and the initiator is not authenticating with sig     
+//      |
+//      (Ex #t. Honest(pkI)@t &    #i = #j) // hack, dumb honest event added due to restrictions on exportable lemmas to proverif
+//      )"
+// yuxuan ends deleting
 
 /*
 
@@ -275,36 +279,37 @@ Non-repudiation [SMP, p.44]
 
 */                                       
 
+//yuxuan starts deleting
+// #ifdef NonRepudiationCompleteness
 
-#ifdef NonRepudiationCompleteness
-
-// Completeness
-// If the judge says that an uncompromised key was active, it was indeed.
-// --> for proverif, we export those query in the injective style with the export flag. 
-lemma non_repudation_R_completeness[output=[spthy]]:
-    "All pkr th proofnr #i #j.   WasActiveR(pkr,th,proofnr)@i & Honest(pkr)@j==> 
-            (Ex #l. DerivedRShared(pkr,th)@l) | (Ex #l. Compromise(pkr)@l)"
-
-
-lemma non_repudation_I_completeness[output=[spthy]]:
-    "All pkI th proofnr #i #j.   WasActiveI(pkI,th,proofnr)@i & Honest(pkI)@j==> 
-            (Ex #l. DerivedIShared(pkI,th)@l) | (Ex #l. Compromise(pkI)@l)"
+// // Completeness
+// // If the judge says that an uncompromised key was active, it was indeed.
+// // --> for proverif, we export those query in the injective style with the export flag. 
+// lemma non_repudation_R_completeness[output=[spthy]]:
+//     "All pkr th proofnr #i #j.   WasActiveR(pkr,th,proofnr)@i & Honest(pkr)@j==> 
+//             (Ex #l. DerivedRShared(pkr,th)@l) | (Ex #l. Compromise(pkr)@l)"
 
 
-#endif
-
-#ifdef NonRepudiationSoundness
-
-// Soundness
-// If the judge was contacted by an honest agent, it will accept the proof and decide that a partner was active.
-lemma non_repudiation_R_soundness[output=[spthy]]:
-	"All proofnr #i. JudgeContactedI(proofnr)@i ==> Ex pkR th #j. WasActiveR(pkR,th,proofnr)@j"
+// lemma non_repudation_I_completeness[output=[spthy]]:
+//     "All pkI th proofnr #i #j.   WasActiveI(pkI,th,proofnr)@i & Honest(pkI)@j==> 
+//             (Ex #l. DerivedIShared(pkI,th)@l) | (Ex #l. Compromise(pkI)@l)"
 
 
-lemma non_repudiation_I_soundness[output=[spthy]]:
-	"All proofnr #i. JudgeContactedR(proofnr)@i ==> Ex pkI th #j. WasActiveI(pkI,th,proofnr)@j"
+// #endif
 
-#endif
+// #ifdef NonRepudiationSoundness
+
+// // Soundness
+// // If the judge was contacted by an honest agent, it will accept the proof and decide that a partner was active.
+// lemma non_repudiation_R_soundness[output=[spthy]]:
+// 	"All proofnr #i. JudgeContactedI(proofnr)@i ==> Ex pkR th #j. WasActiveR(pkR,th,proofnr)@j"
+
+
+// lemma non_repudiation_I_soundness[output=[spthy]]:
+// 	"All proofnr #i. JudgeContactedR(proofnr)@i ==> Ex pkI th #j. WasActiveI(pkI,th,proofnr)@j"
+
+// #endif
+// yuxuan ends deleting
 
 // *******************************************************************
 // ************** Additional properties  *****************************
@@ -321,66 +326,101 @@ lemma non_repudiation_I_soundness[output=[spthy]]:
 This crucially requires that even with a man in the middle, or with a non trusted session, or with a compromise identity, session keys are unique. We cover this in the two following lemmas.
 */
 
+// yuxuan starts deleting
+// lemma authRI_unique:  
+//     "All m cid pkI pkR k4 ko y1 gx1 y2 gx2 #i #j. 
+//      (
+//      AcceptR(cid,m,pkI,pkR,k4,ko,y1,gx1)@i & AcceptR(cid,m,pkI,pkR,k4,ko,y2,gx2)@j  ==> #i = #j
+//      )"
 
-lemma authRI_unique:  
-    "All m cid pkI pkR k4 ko y1 gx1 y2 gx2 #i #j. 
-     (
-     AcceptR(cid,m,pkI,pkR,k4,ko,y1,gx1)@i & AcceptR(cid,m,pkI,pkR,k4,ko,y2,gx2)@j  ==> #i = #j
-     )"
 
-
-lemma authIR_unique:  
-    "All m pkI pkR k3 k4 ko x gy x2 gy2 cid #i #j.      
-     AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & AcceptI(cid,m,pkI,pkR,k3,k4,ko,x2,gy2)@j  ==> 
-     #i = #j"
+// lemma authIR_unique:  
+//     "All m pkI pkR k3 k4 ko x gy x2 gy2 cid #i #j.      
+//      AcceptI(cid,m,pkI,pkR,k3,k4,ko,x,gy)@i & AcceptI(cid,m,pkI,pkR,k3,k4,ko,x2,gy2)@j  ==> 
+//      #i = #j"
+// yuxuan ends deleting
 
 // ******************************************************************
 // ************** Attestation  **************************************
 // ******************************************************************
 
 // Attestation freshness 
-lemma AttestationEvidenceFreshness:
-  "All m credI1 pkI1 pkI2 pkR1 pkR2 nonce meas1 meas2 sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
-    AttestationAcceptedR(cid1, m, pkI1, pkR1, sig1, nonce, meas1, y1, gxy1, pk_attkey1)@i
-    &
-    AttestationAcceptedR(cid2, m, pkI2, pkR2, sig2, nonce, meas2, y2, gxy2, pk_attkey2)@j
-    &
-    HonestNonce(nonce)@k
-  ==> 
-  (#i = #j)
-  &
-  (#k < #i)
-  "
+// lemma AttestationEvidenceFreshness:
+//   "All m pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
+//     VerifiedNonceR(cid1, m, pkI1, pkR1, sig1, nonce, y1, gxy1, pk_attkey1)@i
+//     &
+//     VerifiedNonceR(cid2, m, pkI2, pkR2, sig2, nonce, y2, gxy2, pk_attkey2)@j
+//     &
+//     HonestNonce(nonce)@k
+//   ==> 
+//   (#i = #j)
+//   &
+//   (#k < #i)
+//   "
 
 // Attestation integrity -> the evidence is not modified, so signature is correct
 // PASSED
-lemma AttestationEvidenceIntegrity:
-  "All m pkI pkR sig nonce meas cidR psk ak x y gx gxy pk_attkey prk #i #j #k #l.
-    VerifiedSignatureR(cidR,m, pkI, pkR, nonce, meas, sig, y, gxy)@i
-  ==> 
-  (Ex cidI ak x #t. AttestationGeneratedI(cidI, m, pkI, pkR, nonce, meas, sig, ak, x, gxy)@t & t < i)
-  |
-  (Ex #t. LeakAttKey(ak)@t)
-  |
-  (Ex #t.  Compromise(pkI)@t)
-  |
-  (Ex #t.  Compromise(pkR)@t)
-  "
+// lemma AttestationEvidenceIntegrity:
+//   "All cidR pkI pkR nonce sig y gxy #i #j.
+//     VerifiedSignatureR(cidR, pkI, pkR, nonce, sig, y, gxy)@i
+//     &
+//     Honest(pkI)@j
+//   ==> 
+//   (Ex cidI ak x #t. 
+//     AttestationGeneratedI(cidI, pkI, pkR, nonce, sig, ak, x, gxy)@t 
+//     & t < i)
+//   |
+//   (Ex ak #t. LeakAttKey(ak)@t)
+//   |
+//   (Ex #t.  Compromise(pkI)@t)
+//   |
+//   (Ex #t.  Compromise(pkR)@t)
+//   "
 
 // Agreement of parameters for attestation and authentication
-// TODO
+// lemma AgreementParamaters:
+//   "All cidI cidR method pkI pkR gxy y nonce sig ak pk_attkey #i #j #k.
+//      FinishR(cidR, method, pkI, pkR, gxy, y, nonce, sig, pk_attkey)@i
+//      &
+//      Honest(pkI)@j
+//      &
+//      Honest(pkR)@k
+//    ==>
+//    (Ex cidI ak x #t. SentByI(cidI, method, pkI, pkR, gxy, x, nonce, sig, ak, pk_attkey)@t & t < i )
+//     |
+//     (Ex pkR #t. Compromise(pkR)@t & t < i)
+//     |
+//     (Ex pkI #t. Compromise(pkI)@t & t < i)
+//     |
+//     (Ex ak #t. Compromise(ak)@t & t < i)
+//     "   
 
-lemma ChannelBinding:
-"All cid m pkI pkR gx y1 y2 prk prk4 gxy1 gxy2 pk_attkey sig meas nonce ak #i #j #l #k #u #c.
-    AttestationAcceptedR(cid,m, pkI, pkR, sig, nonce, meas, y1, gxy1, pk_attkey)@i 
-    &
-    AcceptRRA(cid, m, pkI, pkR, prk4, prk, y2, gx, gxy2)@j
+
+lemma ChannelBinding_RelayAttack:
+"All cidR pkI pkR nonce sig gxy gx gy th3 pk_attkey id_att #j.
+    AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, gx, gy, th3, pk_attkey, id_att)@j
   ==>
-    (Ex cidI prk3 gy x ak #t. AcceptIRA(cid, m, pkI, pkR, prk3, prk4, prk, x, gy, gxy2, ak)@t
-    & t < j
-    & gxy1 = gxy2)
+    (Ex cidI ak #i.
+        SentByI(cidI, pkI, pkR, nonce, sig, gxy, gx, gy, th3, ak, pk_attkey, id_att)@i
+        & i < j
+    )
     |
-    (Ex #t. Compromise(pkI)@t )
+    (Ex ak #t. LeakAttKey(ak)@t )
     |
-    (Ex #t. Compromise(pkR)@t )
-  "
+    (Ex pkI #t. Compromise(pkI)@t  )
+    |
+    (Ex pkR #t. Compromise(pkR)@t )
+"
+
+// true with TH_3 in the signature
+// lemma ChannelBinding_RelayAttack:
+// "All cidR pkI pkR nonce sig gxy th3 pk_attkey id_att #j.
+//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3, pk_attkey, id_att)@j
+//   ==>
+//     (Ex cidI ak #i.
+//         SentByI(cidI, pkI, pkR, nonce, sig, gxy, th3, ak, pk_attkey, id_att)@i
+//         & i < j
+//     )
+//     |
+//     (Ex ak #t. LeakAttKey(ak)@t )
+// "

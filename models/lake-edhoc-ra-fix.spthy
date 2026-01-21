@@ -185,7 +185,7 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R) =
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, TH_3>,'rep', ~ak) in
 				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
     	        event THIShared(pkI, TH_3); 		
@@ -225,7 +225,7 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R) =
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, TH_3>,'rep', ~ak) in
 				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
     	        event THIShared(pkI, TH_3); 		
@@ -262,7 +262,7 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R) =
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, TH_3>,'rep', ~ak) in
 				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
     	        event THIShared(pkI, TH_3); 		
@@ -305,7 +305,7 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R) =
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, TH_3>,'rep', ~ak) in
 				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
     	        event THIShared(pkI, TH_3); 		
@@ -400,7 +400,7 @@ let R(~cid, ~skR,~R, ID_CRED_Att) =
 				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in 
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in       
-				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R, TH_3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_zero, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
@@ -464,7 +464,7 @@ let R(~cid, ~skR,~R, ID_CRED_Att) =
 				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in        
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in
-				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R, TH_3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_one, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
@@ -530,7 +530,7 @@ let R(~cid, ~skR,~R, ID_CRED_Att) =
 				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in        
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in
-				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R, TH_3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_two, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
@@ -601,7 +601,7 @@ let R(~cid, ~skR,~R, ID_CRED_Att) =
 				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in        
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in
-				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R, TH_3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_three, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
