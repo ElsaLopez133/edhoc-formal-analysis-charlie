@@ -521,16 +521,34 @@ This crucially requires that even with a man in the middle, or with a non truste
 //   "
 
 lemma ChannelBinding_RelayAttack:
-"All cidR pkI pkR nonce sig gxyR th3R pk_attkey id_att #j.
-    AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxyR, th3R, pk_attkey, id_att)@j
+"All cidR pkI1 pkR1 nonce sig gxy1 th31 pk_attkey id_att th3 gxy pkI pkR gx gy #j.
+    AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, gx, gy, th3, pk_attkey, id_att)@j
   ==>
-    (Ex cidI gxyI th3I ak #i.
-        SentByI(cidI, pkI, pkR, nonce, sig, gxyI, th3I, ak, pk_attkey, id_att)@i
+    (Ex cidI pkI2 pkR2 gxy2 th32 ak #i.
+        SentByI(cidI, pkI, pkR, nonce, sig, gxy,gx, gy, th3, ak, pk_attkey, id_att)@i
         & i < j
-        & gxyI = gxyR
-        & th3I = th3R
     )
+    |
+    (Ex ak #t. LeakAttKey(ak)@t )
+    |
+    (Ex pkI #t. Compromise(pkI)@t  )
+    |
+    (Ex pkR #t. Compromise(pkR)@t )
+
 "
+
+// true with TH_3 in the signature
+// lemma ChannelBinding_RelayAttack:
+// "All cidR pkI pkR nonce sig gxy th3 pk_attkey id_att #j.
+//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3, pk_attkey, id_att)@j
+//   ==>
+//     (Ex cidI ak #i.
+//         SentByI(cidI, pkI, pkR, nonce, sig, gxy, th3, ak, pk_attkey, id_att)@i
+//         & i < j
+//     )
+//     |
+//     (Ex ak #t. LeakAttKey(ak)@t )
+// "
 
 
 //// 永远保真

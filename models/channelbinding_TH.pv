@@ -88,8 +88,8 @@ reduc forall x:bitstring, y:bitstring;   get_sig_cred(id(x, y)) = x.
 reduc forall x:bitstring;   check_cred(x) = const_cred.
 reduc forall x:bitstring;   check_grp(x) = const_grp.
 set preciseActions=true.
-(* set simplifyProcess = false.
-set reconstructTrace = false. *)
+set simplifyProcess = false.
+set reconstructTrace = false.
 
 
 (* can be used to restrict methods *)
@@ -172,7 +172,7 @@ let I(cid_2:bitstring, skI_2:bitstring, I_2:bitstring, ak_2:bitstring,
                 if SIGNATURE_or_MAC_2_2 = MAC_2_2 then
                     (let measurement_hash_2:bitstring=hash(measurement_2) in
                      let TH_3_2:bitstring=hash((wrap(TH_2_2), (plaintext_2_2, pkR_2))) in
-                     let signature_2:bitstring=sign((sSignature1, (ID_CRED_Att_2, (nonceR_2, measurement_hash_2))),
+                     let signature_2:bitstring=sign((sSignature1, (ID_CRED_Att_2, (nonceR_2, (measurement_hash_2, TH_3_2)))),
                                                     srep, ak_2) in
                      let EAD_3_2:bitstring=(ID_CRED_Att_2, (nonceR_2, signature_2)) in
                      event eAttestationGeneratedI( cid_2, pkI_2, pkR_2, nonceR_2, signature_2,
@@ -205,7 +205,10 @@ let I(cid_2:bitstring, skI_2:bitstring, I_2:bitstring, ak_2:bitstring,
                      event eSecretsI( cid_2, method_three, pkI_2, pkR_2, PRK_2e_2, PRK_3e2m_2,
                                       PRK_4e3m_2, PRK_out_2, KEYSTREAM_2_2, K_3_2, IV_3_2, X_2, G_Y_2
                            );
-                     out(att,m3_2)))))).
+                     out(att,m3_2);
+                     ((ContactJudgeFromI(ID_CRED_R_2, TH_2_2, pkR_2, EAD_2_2, MAC_2_2,
+                                         SIGNATURE_or_MAC_2_2))
+                    | (leakSKey(PRK_out_2)))))))).
 let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
       ID_CRED_Att_2:bitstring)=
     in(att,(C_R_2:bitstring, suitesR_2:bitstring));
@@ -270,7 +273,7 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                      let measurement_hash_R_2:bitstring=get_meas(ID_CRED_Att_2) in
                      let pk_attkey_2:bitstring=get_att_key(ID_CRED_Att_2) in
                      if verify(signature_in_2,
-                               (sSignature1, (ID_CRED_Att_2, (nonceR_in_2, measurement_hash_R_2))),
+                               (sSignature1, (ID_CRED_Att_2, (nonceR_in_2, (measurement_hash_R_2, TH_3_2)))),
                                pk_attkey_2) =
                         sigtrue then
                          (event eVerifiedSignatureR( cid_2, pkI_2, pkR_2, nonceR_in_2,
@@ -296,7 +299,10 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                                      );
                                event eFinishR( cid_2, method_three, pkI_2, pkR_2, G_XY_2, Y_2,
                                                nonceR_in_2, signature_in_2, pk_attkey_2
-                                     )))
+                                     );
+                               ((ContactJudgeFromR(ID_CRED_I_2, TH_3_2, pkI_2, EAD_3_2, MAC_3_2,
+                                                   SIGNATURE_or_MAC_3_2))
+                              | (leakSKey(PRK_out_3)))))
                      else
                          (let PRK_out_4:bitstring=edhoc_kdf(PRK_4e3m_2, sseven, TH_4_2,
                                                             hash_length) in
@@ -308,7 +314,10 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                                 );
                           event eAcceptRData( PRK_out_4, method_three, pkI_2, pkR_2, Y_2, G_X_2,
                                               (TH_2_2, (TH_3_2, (TH_4_2, (suitesI_2, (EAD_1_2, (EAD_2_2, (EAD_3_2, (m1_2, (plaintext_2_2, plaintext_3_2)))))))))
-                                ))))))).
+                                );
+                          ((ContactJudgeFromR(ID_CRED_I_2, TH_3_2, pkI_2, EAD_3_2, MAC_3_2,
+                                              SIGNATURE_or_MAC_3_2))
+                         | (leakSKey(PRK_out_4))))))))).
 let compromise(sk_2:bitstring)=
     in(att,=sComp);
     event eCompromise( pk(sk_2) );
