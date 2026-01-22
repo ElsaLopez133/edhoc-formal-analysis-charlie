@@ -11,7 +11,7 @@ The model enables the formal verification of:
 - Attestation
 - Authentication and attestation
 
-# Prerequisite
+## Prerequisite
 
 The case-studies are based on the Sapic+ protocol platform, which allows from a single input file to export to Tamarin, Proverif and Deepsec.
 
@@ -20,7 +20,7 @@ The case-studies are based on the Sapic+ protocol platform, which allows from a 
 - Python 3 (for automation script)
 - Optional: Graphviz (for ProVerif attack graphs)
 
-# High Level Description
+## High Level Description
 
 In `model`, you will find two `.spthy` files, the tamarin and Sapic+ input format, that correspond to the protocol:
  * `lake-edhoc-ra.spthy` -> the model with 4 authentication methods under the latest version of the draft-ietf-lake-ra (version -03)
@@ -37,3 +37,4 @@ In `model`, you will find two `.spthy` files, the tamarin and Sapic+ input forma
 ## Acknolwdegments
 
 This repository follows https://github.com/charlie-j/edhoc-formal-analysis/tree/master
+
