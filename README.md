@@ -1,36 +1,39 @@
-This repository contains the models for the formal analysis of the Lake EDHOC protocol.
-The version under verification is draft 18 (https://datatracker.ietf.org/doc/draft-ietf-lake-edhoc/18/).
+This repository contains the models for the formal analysis of the Lake Remote Attestation over EDHOC protocol.
+The version under verification is draft 03 (https://datatracker.ietf.org/doc/draft-ietf-lake-ra/).
 
-In this reposity, you will find
- * the `Archives` subfolder containing the previous models for draft 12 and draft 14 corresponding to the results reported in the paper `A comprehensive, formal and automated analysis of the EDHOC protocol`- Charlie Jacomme, Elise Klein, Steve Kremer, Maïwenn Racouchot, USENIX'23,  https://hal.inria.fr/hal-03810102/.
- * the `models` subfolder contains the actual model, see details bellow.
- * the `SecurityClaims.md` file, which contains the extracted security related mentions inside the draft. In this file, the text between `quotes` is the one explicitely reused inside the specification of the security properties in `models/LakeProperties.splib`.
- * the `auto_checker.py` script along with additional scripts in `utilities`, that allow to run the full analaysis (see prerequisite). `res.pdf` is the automated results produced by the script, after following the steps described in `run.sh`.
+This work builds on prior formal analyses of the LAKE EDHOC protocol, in particular the results reported in the paper `A comprehensive, formal and automated analysis of the EDHOC protocol`- Charlie Jacomme, Elise Klein, Steve Kremer, Maïwenn Racouchot, USENIX'23,  https://hal.inria.fr/hal-03810102/.
+
+## 📌 Goals
+
+The model enables the formal verification of:
+
+- Authentication
+- Attestation
+- Authentication and attestation
 
 # Prerequisite
 
 The case-studies are based on the Sapic+ protocol platform, which allows from a single input file to export to Tamarin, Proverif and Deepsec.
 
-We provide a Docker Image with all required tools preinstalled and the case studies folder on DockerHub. It can be obtained with:
-
- $ docker pull protocolanalysis/lake-edhoc:draft-14
-
-Alternatively, one may install the Sapic+ version neeeded for our case studies through the provided archive (with corresponding README), and then follow the installations instructions from the Proverif (https://proverif.inria.fr/) and DeepSec (https://deepsec-prover.github.io/) webpages. 
+- Tamarin Prover ≥ 1.9.0
+- ProVerif ≥ 2.04
+- Python 3 (for automation script)
+- Optional: Graphviz (for ProVerif attack graphs)
 
 # High Level Description
 
+In `model`, you will find two `.spthy` files, the tamarin and Sapic+ input format, that correspond to the protocol:
+ * `lake-edhoc-ra.spthy` -> the model with 4 authentication methods under the latest version of the draft-ietf-lake-ra (version -03)
+ * `lake-edhoc-ra-fix.spthy`  -> the model with proposed fix to mitigate the found attack.
+ 
+ These two files share the same headers, in `Headers.splib`, and the security lemmas, in `LakeProperties.splib`. Moreover, they contain multiple options for advanced threat models that can be enabled or disabled with flags, specified to tamarin on the command line using the "-D" option. More details can be found under /models repo.
+ 
 
-In `model`, you may find several `.spthy` files, the tamarin and Sapic+ input format, that correspond to variants of the protocol:
- * `lake-edhoc.spthy` -> the classical model (with 4 authentication methods) of the protocol
- * `lake-edhoc-KEM.spthy`  -> the KEM based variant
- * `lake-edhoc-Sig-DDH.spthy` -> EDHOC with a more precise model of Signatures and DDH which is event based
- * `lake-edhoc-KEM-Sig.spthy`  -> EDHOC KEM based with a more precise model of Signatures
- * `lake-edhoc-KEM-Hash.spthy`  -> EDHOCs with a more precise model of hash
- 
- Each of those files shares some common headers, in `Headers.splib`, and the security lemmas, in `LakeProperties.splib`. Moreover, each of those files contains multiple options for advanced threat models that can be enabled or disabled with flags, specified to tamarin on the command line using the "-D" option. 
- 
- The `.spthy` files share most of their code as they were actually generated using the Jinja2 templating engine using the template in the `model/templates/` subfolder. For simplicity, we however provide them pre-generated.
- 
-# Auto_checker usage
- 
-TODO
+## 📚 References
+
+- [Remote attestation over EDHOC Draft](https://www.ietf.org/archive/id/draft-ietf-lake-ra-03.html)
+- [EDHOC IETF Draft](https://datatracker.ietf.org/doc/html/draft-ietf-lake-edhoc)
+
+## Acknolwdegments
+
+This repository follows https://github.com/charlie-j/edhoc-formal-analysis/tree/master
