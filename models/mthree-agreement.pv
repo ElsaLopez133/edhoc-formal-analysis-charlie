@@ -54,7 +54,7 @@ event eAcceptIRA(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bit
 event eAcceptR(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eAcceptRData(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eAcceptRRA(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
-event eAttestationAcceptedR(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
+event eAttestationAcceptedR(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eAttestationGeneratedI(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eCompromise(bitstring).
 event eDerivedIShared(bitstring,bitstring).
@@ -76,7 +76,7 @@ event eResultGeneratedR(bitstring,bitstring,bitstring,bitstring,bitstring,bitstr
 event eSecretsI(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eSecretsR(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eSendRData(bitstring,bitstring,bitstring).
-event eSentByI(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
+event eSentByI(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eSentByR(bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring,bitstring).
 event eShare(bitstring).
 event eShareLT(bitstring).
@@ -100,7 +100,7 @@ reduc forall x:bitstring, y:bitstring;   get_sig_cred(id(x, y)) = x.
 reduc forall x:bitstring;   check_cred(x) = const_cred.
 reduc forall x:bitstring;   check_grp(x) = const_grp.
 (* can be used to restrict methods *)
-restriction m:bitstring; event(eMethodOk(m)) ==> m=method_two.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_three.
 
 (*AgreementParamaters*)
 query ak:bitstring, akV:bitstring, cidI:bitstring, cidR:bitstring,
@@ -203,8 +203,8 @@ let I(cid_2:bitstring, skI_2:bitstring, I_2:bitstring, ak_2:bitstring,
                    let IV_3_5:bitstring=edhoc_kdf(PRK_3e2m_5, sfour, TH_3_5, iv_length) in
                    let plaintext_3_5:bitstring=(ID_CRED_I_2, (SIGNATURE_or_MAC_3_5, EAD_3_5)) in
                    let m3_5:bitstring=aeadenc(plaintext_3_5, srep, K_3_5, IV_3_5) in
-                   event eSentByI( cid_2, pkI_5, pkR_5, nonceR_2, signature_5, G_YX_2,
-                                   G_X_2, G_Y_2, TH_3_5, ak_2, pk(ak_2), ID_CRED_Att_2
+                   event eSentByI( cid_2, method_zero, pkI_5, pkR_5, G_YX_2, X_2, nonceR_2,
+                                   signature_5, ak_2, pk(ak_2)
                          );
                    let TH_4_5:bitstring=hash((wrap(TH_3_5), (plaintext_3_5, pkI_5))) in
                    let K_4_5:bitstring=edhoc_kdf(PRK_4e3m_5, seight, TH_4_5, key_length) in
@@ -279,8 +279,8 @@ let I(cid_2:bitstring, skI_2:bitstring, I_2:bitstring, ak_2:bitstring,
                         let IV_3_6:bitstring=edhoc_kdf(PRK_3e2m_6, sfour, TH_3_6, iv_length) in
                         let plaintext_3_6:bitstring=(ID_CRED_I_2, (SIGNATURE_or_MAC_3_6, EAD_3_6)) in
                         let m3_6:bitstring=aeadenc(plaintext_3_6, srep, K_3_6, IV_3_6) in
-                        event eSentByI( cid_2, pkI_6, pkR_6, nonceR_2, signature_6, G_YX_2,
-                                        G_X_2, G_Y_2, TH_3_6, ak_2, pk(ak_2), ID_CRED_Att_2
+                        event eSentByI( cid_2, method_one, pkI_6, pkR_6, G_YX_2, X_2, nonceR_2,
+                                        signature_6, ak_2, pk(ak_2)
                               );
                         let TH_4_6:bitstring=hash((wrap(TH_3_6), (plaintext_3_6, pkI_6))) in
                         let K_4_6:bitstring=edhoc_kdf(PRK_4e3m_6, seight, TH_4_6, key_length) in
@@ -355,8 +355,8 @@ let I(cid_2:bitstring, skI_2:bitstring, I_2:bitstring, ak_2:bitstring,
                              let IV_3_7:bitstring=edhoc_kdf(PRK_3e2m_7, sfour, TH_3_7, iv_length) in
                              let plaintext_3_7:bitstring=(ID_CRED_I_2, (SIGNATURE_or_MAC_3_7, EAD_3_7)) in
                              let m3_7:bitstring=aeadenc(plaintext_3_7, srep, K_3_7, IV_3_7) in
-                             event eSentByI( cid_2, pkI_7, pkR_7, nonceR_2, signature_7, G_YX_2,
-                                             G_X_2, G_Y_2, TH_3_7, ak_2, pk(ak_2), ID_CRED_Att_2
+                             event eSentByI( cid_2, method_two, pkI_7, pkR_7, G_YX_2, X_2, nonceR_2,
+                                             signature_7, ak_2, pk(ak_2)
                                    );
                              let TH_4_7:bitstring=hash((wrap(TH_3_7), (plaintext_3_7, pkI_7))) in
                              let K_4_7:bitstring=edhoc_kdf(PRK_4e3m_7, seight, TH_4_7, key_length) in
@@ -432,8 +432,8 @@ let I(cid_2:bitstring, skI_2:bitstring, I_2:bitstring, ak_2:bitstring,
                                   let IV_3_8:bitstring=edhoc_kdf(PRK_3e2m_8, sfour, TH_3_8, iv_length) in
                                   let plaintext_3_8:bitstring=(ID_CRED_I_2, (SIGNATURE_or_MAC_3_8, EAD_3_8)) in
                                   let m3_8:bitstring=aeadenc(plaintext_3_8, srep, K_3_8, IV_3_8) in
-                                  event eSentByI( cid_2, pkI_8, pkR_8, nonceR_2, signature_8, G_YX_2,
-                                                  G_X_2, G_Y_2, TH_3_8, ak_2, pk(ak_2), ID_CRED_Att_2
+                                  event eSentByI( cid_2, method_three, pkI_8, pkR_8, G_YX_2, X_2, nonceR_2,
+                                                  signature_8, ak_2, pk(ak_2)
                                         );
                                   let TH_4_8:bitstring=hash((wrap(TH_3_8), (plaintext_3_8, pkI_8))) in
                                   let K_4_8:bitstring=edhoc_kdf(PRK_4e3m_8, seight, TH_4_8, key_length) in
@@ -550,8 +550,7 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                                                       nonceR_in_5, Y_2, G_XY_2, pk_attkey_5
                                      );
                                event eAttestationAcceptedR( cid_2, pkI_5, pkR_5, nonceR_in_5,
-                                                            signature_in_5, G_XY_2, G_X_2, G_Y_2, TH_3_5,
-                                                            pk_attkey_5, ID_CRED_Att_2
+                                                            signature_in_5, G_XY_2, TH_3_5
                                      );
                                new value_7:bitstring;
                                let signatureR_5:bitstring=sign((ID_CRED_Att_result_2, (nonceI_in_5, value_7)),
@@ -649,8 +648,7 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                                                            nonceR_in_6, Y_2, G_XY_2, pk_attkey_6
                                           );
                                     event eAttestationAcceptedR( cid_2, pkI_6, pkR_6, nonceR_in_6,
-                                                                 signature_in_6, G_XY_2, G_X_2, G_Y_2, TH_3_6,
-                                                                 pk_attkey_6, ID_CRED_Att_2
+                                                                 signature_in_6, G_XY_2, TH_3_6
                                           );
                                     new value_8:bitstring;
                                     let signatureR_6:bitstring=sign((ID_CRED_Att_result_2, (nonceI_in_6, value_8)),
@@ -749,8 +747,7 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                                                                 pk_attkey_7
                                                );
                                          event eAttestationAcceptedR( cid_2, pkI_7, pkR_7, nonceR_in_7,
-                                                                      signature_in_7, G_XY_2, G_X_2, G_Y_2,
-                                                                      TH_3_7, pk_attkey_7, ID_CRED_Att_2
+                                                                      signature_in_7, G_XY_2, TH_3_7
                                                );
                                          new value_9:bitstring;
                                          let signatureR_7:bitstring=sign((ID_CRED_Att_result_2, (nonceI_in_7, value_9)),
@@ -853,9 +850,7 @@ let R(cid_2:bitstring, skR_2:bitstring, R_2:bitstring,
                                                                      pk_attkey_8
                                                     );
                                               event eAttestationAcceptedR( cid_2, pkI_8, pkR_8, nonceR_in_8,
-                                                                           signature_in_8, G_XY_2, G_X_2,
-                                                                           G_Y_2, TH_3_8, pk_attkey_8,
-                                                                           ID_CRED_Att_2
+                                                                           signature_in_8, G_XY_2, TH_3_8
                                                     );
                                               new value_10:bitstring;
                                               let signatureR_8:bitstring=sign((ID_CRED_Att_result_2, (nonceI_in_8, value_10)),
@@ -987,7 +982,7 @@ Inexistant lemma actions
 Restriction actions
 ===================
 
-  restriction `method_two' references action 
+  restriction `method_three' references action 
     fact "MethodOk" (arity 1, Linear) 
   but no rule has such an action.
 *)
@@ -1038,7 +1033,7 @@ Inexistant lemma actions
 Restriction actions
 ===================
 
-  restriction `method_two' references action 
+  restriction `method_three' references action 
     fact "MethodOk" (arity 1, Linear) 
   but no rule has such an action.
 *)

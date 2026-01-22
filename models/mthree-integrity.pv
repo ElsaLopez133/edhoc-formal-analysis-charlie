@@ -100,31 +100,33 @@ reduc forall x:bitstring, y:bitstring;   get_sig_cred(id(x, y)) = x.
 reduc forall x:bitstring;   check_cred(x) = const_cred.
 reduc forall x:bitstring;   check_grp(x) = const_grp.
 (* can be used to restrict methods *)
-restriction m:bitstring; event(eMethodOk(m)) ==> m=method_two.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_three.
 
-(*AgreementParamaters*)
-query ak:bitstring, akV:bitstring, cidI:bitstring, cidR:bitstring,
-      dev_state:bitstring, gx:bitstring, gxy:bitstring, gy:bitstring,
-      id_att:bitstring, idd_att_result:bitstring, method:bitstring,
-      nonceI:bitstring, nonceR:bitstring, pkI:bitstring, pkR:bitstring,
-      pk_attkeyI:bitstring, pk_attkey_v:bitstring, sigI:bitstring,
-      sigR:bitstring, x:bitstring, y:bitstring, i:time, j:time, k:time, t:time,
-      pkI_1:bitstring, pkR_1:bitstring;
- (((event(eFinishI( cidI, method, pkI, pkR, gxy, x, gx, gy, nonceI,
-                    nonceR, sigI, sigR, dev_state, id_att, idd_att_result, pk_attkeyI,
-                    pk_attkey_v
-          ))@i) &&
-   (event(eHonest( pkI ))@j)) &&
-  (event(eHonest( pkR ))@k)) ==>
- ((((((event(eFinishR( cidR, method, pkI, pkR, gxy, y, gx, gy, nonceI,
-                       nonceR, sigI, sigR, dev_state, id_att, idd_att_result, pk_attkeyI,
-                       pk_attkey_v
-             ))@t) &&
-      (t < i)) ||
-     ((event(eCompromise( pkR_1 ))@t) && (t < i))) ||
-    ((event(eCompromise( pkI_1 ))@t) && (t < i))) ||
-   ((event(eLeakAttKey( ak ))@t) && (t < i))) ||
-  ((event(eLeakAttKey( akV ))@t) && (t < i)))
+(*AttestationEvidenceIntegrity*)
+query ak:bitstring, cidI:bitstring, cidR:bitstring, gxy:bitstring,
+      nonce:bitstring, pkI:bitstring, pkR:bitstring, sig:bitstring,
+      x:bitstring, y:bitstring, i:time, j:time, t:time;
+ ((event(eVerifiedSignatureR( cidR, pkI, pkR, nonce, sig, y, gxy ))@i) &&
+  (event(eHonest( pkI ))@j)) ==>
+ (((((event(eAttestationGeneratedI( cidI, pkI, pkR, nonce, sig, ak, x, gxy
+            ))@t) &&
+     (t < i)) ||
+    (event(eLeakAttKey( ak ))@t)) ||
+   (event(eCompromise( pkI ))@t)) ||
+  (event(eCompromise( pkR ))@t))
+.
+(*AttestationResultIntegrity*)
+query ak:bitstring, cidI:bitstring, cidR:bitstring, gxy:bitstring,
+      nonce:bitstring, pkI:bitstring, pkR:bitstring, sig:bitstring,
+      x:bitstring, y:bitstring, i:time, j:time, t:time;
+ ((event(eVerifiedSignatureI( cidI, pkI, pkR, nonce, sig, x, gxy ))@i) &&
+  (event(eHonest( pkR ))@j)) ==>
+ (((((event(eResultGeneratedR( cidR, pkI, pkR, nonce, sig, ak, y, gxy
+            ))@t) &&
+     (t < i)) ||
+    (event(eLeakAttKey( ak ))@t)) ||
+   (event(eCompromise( pkI ))@t)) ||
+  (event(eCompromise( pkR ))@t))
 .
 let MakeDEO()=
     0.
@@ -960,34 +962,58 @@ Wellformedness-error in Process
 Inexistant lemma actions
 ========================
 
-  lemma `AgreementParamaters' references action 
+  lemma `AttestationEvidenceIntegrity' references action 
+    fact "AttestationGeneratedI" (arity 8, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationEvidenceIntegrity' references action 
     fact "Compromise" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishI" (arity 17, Linear) 
+  lemma `AttestationEvidenceIntegrity' references action 
+    fact "Compromise" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishR" (arity 17, Linear) 
-  but no rule has such an action.
-  
-  lemma `AgreementParamaters' references action 
+  lemma `AttestationEvidenceIntegrity' references action 
     fact "Honest" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "Honest" (arity 1, Linear) 
-  but no rule has such an action.
-  
-  lemma `AgreementParamaters' references action 
+  lemma `AttestationEvidenceIntegrity' references action 
     fact "LeakAttKey" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationEvidenceIntegrity' references action 
+    fact "VerifiedSignatureR" (arity 7, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "Compromise" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "Compromise" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "Honest" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "LeakAttKey" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "ResultGeneratedR" (arity 8, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "VerifiedSignatureI" (arity 7, Linear) 
   but no rule has such an action.
 
 Restriction actions
 ===================
 
-  restriction `method_two' references action 
+  restriction `method_three' references action 
     fact "MethodOk" (arity 1, Linear) 
   but no rule has such an action.
 *)
@@ -1011,34 +1037,58 @@ Wellformedness-error in Process
 Inexistant lemma actions
 ========================
 
-  lemma `AgreementParamaters' references action 
+  lemma `AttestationEvidenceIntegrity' references action 
+    fact "AttestationGeneratedI" (arity 8, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationEvidenceIntegrity' references action 
     fact "Compromise" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishI" (arity 17, Linear) 
+  lemma `AttestationEvidenceIntegrity' references action 
+    fact "Compromise" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishR" (arity 17, Linear) 
-  but no rule has such an action.
-  
-  lemma `AgreementParamaters' references action 
+  lemma `AttestationEvidenceIntegrity' references action 
     fact "Honest" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "Honest" (arity 1, Linear) 
-  but no rule has such an action.
-  
-  lemma `AgreementParamaters' references action 
+  lemma `AttestationEvidenceIntegrity' references action 
     fact "LeakAttKey" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationEvidenceIntegrity' references action 
+    fact "VerifiedSignatureR" (arity 7, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "Compromise" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "Compromise" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "Honest" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "LeakAttKey" (arity 1, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "ResultGeneratedR" (arity 8, Linear) 
+  but no rule has such an action.
+  
+  lemma `AttestationResultIntegrity' references action 
+    fact "VerifiedSignatureI" (arity 7, Linear) 
   but no rule has such an action.
 
 Restriction actions
 ===================
 
-  restriction `method_two' references action 
+  restriction `method_three' references action 
     fact "MethodOk" (arity 1, Linear) 
   but no rule has such an action.
 *)

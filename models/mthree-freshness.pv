@@ -100,31 +100,37 @@ reduc forall x:bitstring, y:bitstring;   get_sig_cred(id(x, y)) = x.
 reduc forall x:bitstring;   check_cred(x) = const_cred.
 reduc forall x:bitstring;   check_grp(x) = const_grp.
 (* can be used to restrict methods *)
-restriction m:bitstring; event(eMethodOk(m)) ==> m=method_two.
+restriction m:bitstring; event(eMethodOk(m)) ==> m=method_three.
 
-(*AgreementParamaters*)
-query ak:bitstring, akV:bitstring, cidI:bitstring, cidR:bitstring,
-      dev_state:bitstring, gx:bitstring, gxy:bitstring, gy:bitstring,
-      id_att:bitstring, idd_att_result:bitstring, method:bitstring,
-      nonceI:bitstring, nonceR:bitstring, pkI:bitstring, pkR:bitstring,
-      pk_attkeyI:bitstring, pk_attkey_v:bitstring, sigI:bitstring,
-      sigR:bitstring, x:bitstring, y:bitstring, i:time, j:time, k:time, t:time,
-      pkI_1:bitstring, pkR_1:bitstring;
- (((event(eFinishI( cidI, method, pkI, pkR, gxy, x, gx, gy, nonceI,
-                    nonceR, sigI, sigR, dev_state, id_att, idd_att_result, pk_attkeyI,
-                    pk_attkey_v
+(*AttestationEvidenceFreshness*)
+query cid1:bitstring, cid2:bitstring, gxy1:bitstring, gxy2:bitstring,
+      m:bitstring, nonce:bitstring, pkI1:bitstring, pkI2:bitstring,
+      pkR1:bitstring, pkR2:bitstring, pk_attkey1:bitstring,
+      pk_attkey2:bitstring, sig1:bitstring, sig2:bitstring, y1:bitstring,
+      y2:bitstring, i:time, j:time, k:time;
+ (((event(eVerifiedNonceR( cid1, m, pkI1, pkR1, sig1, nonce, y1, gxy1,
+                           pk_attkey1
           ))@i) &&
-   (event(eHonest( pkI ))@j)) &&
-  (event(eHonest( pkR ))@k)) ==>
- ((((((event(eFinishR( cidR, method, pkI, pkR, gxy, y, gx, gy, nonceI,
-                       nonceR, sigI, sigR, dev_state, id_att, idd_att_result, pk_attkeyI,
-                       pk_attkey_v
-             ))@t) &&
-      (t < i)) ||
-     ((event(eCompromise( pkR_1 ))@t) && (t < i))) ||
-    ((event(eCompromise( pkI_1 ))@t) && (t < i))) ||
-   ((event(eLeakAttKey( ak ))@t) && (t < i))) ||
-  ((event(eLeakAttKey( akV ))@t) && (t < i)))
+   (event(eVerifiedNonceR( cid2, m, pkI2, pkR2, sig2, nonce, y2, gxy2,
+                           pk_attkey2
+          ))@j)) &&
+  (event(eHonestNonce( nonce ))@k)) ==>
+ ((i = j) && (k < i))
+.
+(*AttestationResultFreshness*)
+query cid1:bitstring, cid2:bitstring, gyx1:bitstring, gyx2:bitstring,
+      m:bitstring, nonce:bitstring, pkI1:bitstring, pkI2:bitstring,
+      pkR1:bitstring, pkR2:bitstring, pk_attkey1:bitstring,
+      pk_attkey2:bitstring, sig1:bitstring, sig2:bitstring, x1:bitstring,
+      x2:bitstring, i:time, j:time, k:time;
+ (((event(eVerifiedNonceI( cid1, m, pkI1, pkR1, sig1, nonce, x1, gyx1,
+                           pk_attkey1
+          ))@i) &&
+   (event(eVerifiedNonceI( cid2, m, pkI2, pkR2, sig2, nonce, x2, gyx2,
+                           pk_attkey2
+          ))@j)) &&
+  (event(eHonestNonceI( nonce ))@k)) ==>
+ ((i = j) && (k < i))
 .
 let MakeDEO()=
     0.
@@ -960,34 +966,34 @@ Wellformedness-error in Process
 Inexistant lemma actions
 ========================
 
-  lemma `AgreementParamaters' references action 
-    fact "Compromise" (arity 1, Linear) 
+  lemma `AttestationEvidenceFreshness' references action 
+    fact "HonestNonce" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishI" (arity 17, Linear) 
+  lemma `AttestationEvidenceFreshness' references action 
+    fact "VerifiedNonceR" (arity 9, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishR" (arity 17, Linear) 
+  lemma `AttestationEvidenceFreshness' references action 
+    fact "VerifiedNonceR" (arity 9, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "Honest" (arity 1, Linear) 
+  lemma `AttestationResultFreshness' references action 
+    fact "HonestNonceI" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "Honest" (arity 1, Linear) 
+  lemma `AttestationResultFreshness' references action 
+    fact "VerifiedNonceI" (arity 9, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "LeakAttKey" (arity 1, Linear) 
+  lemma `AttestationResultFreshness' references action 
+    fact "VerifiedNonceI" (arity 9, Linear) 
   but no rule has such an action.
 
 Restriction actions
 ===================
 
-  restriction `method_two' references action 
+  restriction `method_three' references action 
     fact "MethodOk" (arity 1, Linear) 
   but no rule has such an action.
 *)
@@ -1011,34 +1017,34 @@ Wellformedness-error in Process
 Inexistant lemma actions
 ========================
 
-  lemma `AgreementParamaters' references action 
-    fact "Compromise" (arity 1, Linear) 
+  lemma `AttestationEvidenceFreshness' references action 
+    fact "HonestNonce" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishI" (arity 17, Linear) 
+  lemma `AttestationEvidenceFreshness' references action 
+    fact "VerifiedNonceR" (arity 9, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "FinishR" (arity 17, Linear) 
+  lemma `AttestationEvidenceFreshness' references action 
+    fact "VerifiedNonceR" (arity 9, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "Honest" (arity 1, Linear) 
+  lemma `AttestationResultFreshness' references action 
+    fact "HonestNonceI" (arity 1, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "Honest" (arity 1, Linear) 
+  lemma `AttestationResultFreshness' references action 
+    fact "VerifiedNonceI" (arity 9, Linear) 
   but no rule has such an action.
   
-  lemma `AgreementParamaters' references action 
-    fact "LeakAttKey" (arity 1, Linear) 
+  lemma `AttestationResultFreshness' references action 
+    fact "VerifiedNonceI" (arity 9, Linear) 
   but no rule has such an action.
 
 Restriction actions
 ===================
 
-  restriction `method_two' references action 
+  restriction `method_three' references action 
     fact "MethodOk" (arity 1, Linear) 
   but no rule has such an action.
 *)

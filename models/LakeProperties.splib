@@ -345,127 +345,106 @@ This crucially requires that even with a man in the middle, or with a non truste
 // ******************************************************************
 
 // Evidence freshness 
-// lemma AttestationEvidenceFreshness:
-//   "All m pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
-//     VerifiedNonceR(cid1, m, pkI1, pkR1, sig1, nonce, y1, gxy1, pk_attkey1)@i
-//     &
-//     VerifiedNonceR(cid2, m, pkI2, pkR2, sig2, nonce, y2, gxy2, pk_attkey2)@j
-//     &
-//     HonestNonce(nonce)@k
-//   ==> 
-//   (#i = #j)
-//   &
-//   (#k < #i)
-//   "
+lemma AttestationEvidenceFreshness:
+  "All m pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2 cid1 cid2 pk_attkey1 pk_attkey2 y1 y2 gxy1 gxy2 #i #j #k.
+    VerifiedNonceR(cid1, m, pkI1, pkR1, sig1, nonce, y1, gxy1, pk_attkey1)@i
+    &
+    VerifiedNonceR(cid2, m, pkI2, pkR2, sig2, nonce, y2, gxy2, pk_attkey2)@j
+    &
+    HonestNonce(nonce)@k
+  ==> 
+  (#i = #j)
+  &
+  (#k < #i)
+  "
 
 // result freshness
-// lemma AttestationResultFreshness:
-//   "All pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2 cid1 cid2 x1 x2 gyx1 gyx2 #i #j #k.
-//     VerifiedNonceI(cid1, pkI1, pkR1, sig1, nonce, x1, gyx1)@i
-//     &
-//     VerifiedNonceI(cid2, pkI2, pkR2, sig2, nonce, x2, gyx2)@j
-//     &
-//     HonestNonceI(nonce)@k
-//   ==> 
-//   (#i = #j)
-//   &
-//   (#k < #i)
-//   "
-
-
-// lemma AttestationResultFreshness:
-//   // "All cid1 cid2 nonce #i #j #k. ResultAcceptedI(cid1, nonce)@i
-//   // &
-//   // ResultAcceptedI(cid2, nonce)@j
-//   // &
-//   "All cid1 cid2 pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2 x1 x2 gxy1 gxy2 #i #j #k.
-//   VerifiedSignatureI(cid1, pkI1, pkR1, nonce, sig1, x1, gxy1)@i
-//   &
-//   VerifiedSignatureI(cid2, pkI2, pkR2, nonce, sig2, x2, gxy2)@j
-//   &
-//   HonestNonceI(nonce)@k
-//   // ==>
-//   // (Ex #k. HonestNonceI(nonce)@k )
-//   ==>
-//   (#i = #j)
-//   &
-//   ( #k < #i)
-//   "
+lemma AttestationResultFreshness:
+  "All cid1 cid2 m pkI1 pkI2 pkR1 pkR2 nonce sig1 sig2  x1 x2 gyx1 gyx2 pk_attkey1 pk_attkey2 #i #j #k.
+    VerifiedNonceI(cid1, m, pkI1, pkR1, sig1, nonce, x1, gyx1, pk_attkey1)@i
+    &
+    VerifiedNonceI(cid2, m, pkI2, pkR2, sig2, nonce, x2, gyx2, pk_attkey2)@j
+    &
+    HonestNonceI(nonce)@k
+  ==> 
+  (#i = #j)
+  &
+  (#k < #i)
+  "
 
 
 // Attestation integrity -> the evidence is not modified, so signature is correct
 // PASSED
-// lemma AttestationEvidenceIntegrity:
-//   "All cidR pkI pkR nonce sig y gxy #i #j.
-//     VerifiedSignatureR(cidR, pkI, pkR, nonce, sig, y, gxy)@i
-//     &
-//     Honest(pkI)@j
-//   ==> 
-//   (Ex cidI ak x #t. 
-//     AttestationGeneratedI(cidI, pkI, pkR, nonce, sig, ak, x, gxy)@t 
-//     & t < i)
-//   |
-//   (Ex ak #t. LeakAttKey(ak)@t)
-//   |
-//   (Ex #t.  Compromise(pkI)@t)
-//   |
-//   (Ex #t.  Compromise(pkR)@t)
-//   "
+lemma AttestationEvidenceIntegrity:
+  "All cidR pkI pkR nonce sig y gxy #i #j.
+    VerifiedSignatureR(cidR, pkI, pkR, nonce, sig, y, gxy)@i
+    &
+    Honest(pkI)@j
+  ==> 
+  (Ex cidI ak x #t. 
+    AttestationGeneratedI(cidI, pkI, pkR, nonce, sig, ak, x, gxy)@t 
+    & t < i)
+  |
+  (Ex ak #t. LeakAttKey(ak)@t)
+  |
+  (Ex #t.  Compromise(pkI)@t)
+  |
+  (Ex #t.  Compromise(pkR)@t)
+  "
 
 // Result integrity -> the Attestation result is not modified, so signature is correct
-// lemma AttestationResultIntegrity:
-//   "All cidI pkI pkR nonce sig x gxy #i #j.
-//     VerifiedSignatureI(cidI, pkI, pkR, nonce, sig, x, gxy)@i
-//     &
-//     Honest(pkR)@j
-//   ==> 
-//   (Ex cidR ak y #t. 
-//     ResultGeneratedR(cidR, pkI, pkR, nonce, sig, ak, y, gxy)@t 
-//     & t < i)
-//   |
-//   (Ex ak #t. LeakAttKey(ak)@t)
-//   |
-//   (Ex #t.  Compromise(pkI)@t)
-//   |
-//   (Ex #t.  Compromise(pkR)@t)
-//   "
+lemma AttestationResultIntegrity:
+  "All cidI pkI pkR nonce sig x gxy #i #j.
+    VerifiedSignatureI(cidI, pkI, pkR, nonce, sig, x, gxy)@i
+    &
+    Honest(pkR)@j
+  ==> 
+  (Ex cidR ak y #t. 
+    ResultGeneratedR(cidR, pkI, pkR, nonce, sig, ak, y, gxy)@t 
+    & t < i)
+  |
+  (Ex ak #t. LeakAttKey(ak)@t)
+  |
+  (Ex #t.  Compromise(pkI)@t)
+  |
+  (Ex #t.  Compromise(pkR)@t)
+  "
 
 // Agreement of parameters for attestation and authentication
+// TRUE
 lemma AgreementParamaters:
-  "All cidI method pkI pkR gyx x nonceI nonceR sig akI pk_attkeyI pk_attkeyV #i #j #k.
-     FinishI(cidI, method, pkI, pkR, gyx, x, nonceI, nonceR, sig, akI, pk_attkeyI, pk_attkeyV)@i
+  "All cidI method pkI pkR gxy x gx gy nonceI nonceR sigI sigR dev_state id_att idd_att_result pk_attkeyI pk_attkey_v #i #j #k.
+     FinishI(cidI, method, pkI, pkR, gxy, x, gx, gy, nonceI, nonceR, sigI, sigR, dev_state, id_att, idd_att_result, pk_attkeyI, pk_attkey_v)@i
      &
      Honest(pkI)@j
      &
      Honest(pkR)@k
    ==>
-   (Ex cidR y akV #t. SentByR(cidR, method, pkI, pkR, gyx, y, nonceI, nonceR, sig, pk_attkeyI, akV, pk_attkeyV)@t & t < i )
-    // |
-    // (Ex pkR #t. Compromise(pkR)@t & t < i)
-    // |
-    // (Ex pkI #t. Compromise(pkI)@t & t < i)
+   (Ex cidR y #t. FinishR(cidR, method, pkI, pkR, gxy, y, gx, gy, nonceI, nonceR, sigI, sigR, dev_state, id_att, idd_att_result, pk_attkeyI, pk_attkey_v)@t & t < i )
     |
-    (Ex #t. LeakAttKey(akI)@t & t < i)
+    (Ex pkR #t. Compromise(pkR)@t & t < i)
+    |
+    (Ex pkI #t. Compromise(pkI)@t & t < i)
+    |
+    (Ex ak #t. LeakAttKey(ak)@t & t < i)
     |
     (Ex akV #t. LeakAttKey(akV)@t & t < i)
     "   
 
-
-// lemma ChannelBinding:
-// "All cidI cidR pkI pkR nonce sig gxy gxyI th3I th3R #i #j #k.
-//     AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, th3R)@i 
-//   ==>
-//     (Ex cidI ak x gxyI #t. SentbyI(cidI, pkI, pkR, nonce, sig, gxyI, th3I)@t
-//     & 
-//     th3I = th3R
-//     &
-//     gxy = gxyI
-//     &
-//     t < i)
-//     |
-//     // (Ex pkI #t. Compromise(pkI)@t  )
-//     (Ex pkI pkR #t #l. Compromise(pkI)@t 
-//     & Compromise(pkR)@l )
-//     // |
-//     // (Ex pkR #t. Compromise(pkR)@t )
-//   "
+// Channel binding property for attestation evidence (sent in EAD_3), the evidence should be generated by the authenticated peer itself.
+// FALSE
+lemma ChannelBindingEvidence:
+"All cidR pkI pkR nonce sig gxy gx gy th3 pk_attkey id_att #j.
+    AttestationAcceptedR(cidR, pkI, pkR, nonce, sig, gxy, gx, gy, th3, pk_attkey, id_att)@j
+  ==>
+    (Ex cidI ak #i.
+        SentByI(cidI, pkI, pkR, nonce, sig, gxy, gx, gy, th3, ak, pk_attkey, id_att)@i
+        & i < j
+    )
+    |
+    (Ex ak #t. LeakAttKey(ak)@t )
+    |
+    (Ex pkI #t. Compromise(pkI)@t  )
+    |
+    (Ex pkR #t. Compromise(pkR)@t )
+"
