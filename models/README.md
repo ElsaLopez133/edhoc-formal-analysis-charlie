@@ -5,8 +5,8 @@ models/
 │
 ├── lake-edhoc-ra.spthy             # Main SAPIC+ specification
 ├── lake-edhoc-ra-fix.spthy         # SAPIC+ specification with the proposed mitigation for the discovered attack
-├── LAKEPropertiesPSK.splib         # Lemmas for SAPIC+
-└──  Headers.splib                   # Optional attacker-capability flags
+├── LAKEPropertiesPSK.splib         # Lemmas for SAPIC+, attestation lemmas with explanations for formalization and events
+└──  Headers.splib                   # Optional attacker-capability flags, select different methods
 ```
 
 ## 🚀 Running the model using SAPIC+
