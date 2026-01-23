@@ -42,7 +42,7 @@ Added in lake-edhoc-ra.spthy and Headers.splib:
 | `compromiseDH(k)`        | Ephemeral DH secret leakage                               |
 | `compromise(sk)`         | Long term authentication signature key leakage            |
 | `LeakSessionKey(prk_out)`| Leakage of the final session key                          |
-| `LeakAttKey(ak)          | Leakage of attestation key                                |                  
+| `LeakAttKey(ak)`         | Leakage of attestation key                                |                  
 
 #### Interactive Mode (Optional)
 
