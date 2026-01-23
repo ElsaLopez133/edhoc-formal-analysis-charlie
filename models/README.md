@@ -34,18 +34,15 @@ tamarin-prover --prove=AttestationEvidenceIntegrity lake-edhoc-ra.spthy
 
 Any lemma listed in LAKEPropertiesPSK.splib can be used here.
 
-#### ⚙️ Adding attacker capabilities
+#### ⚙️ Attacker capabilities
 
-Defined in Headers.splib:
-| Flag              | Meaning                                                   |
-| ----------------- | --------------------------------------------------------- |
-| `LeakShare`       | Ephemeral DH secret leakage                               |
-| `LeakSessionKey`  | Leakage of the final session key                          |
-
-To activate any capability:
-```bash
-tamarin-prover --prove=<lemma> -D<attacker-capability> lake-edhoc-ra.spthy
-```
+Added in lake-edhoc-ra.spthy and Headers.splib:
+| Attacker capabilites     | Meaning                                                   |
+| ------------------------ | --------------------------------------------------------- |
+| `compromiseDH(k)`        | Ephemeral DH secret leakage                               |
+| `compromise(sk)`         | Long term authentication signature key leakage            |
+| `LeakSessionKey(prk_out)`| Leakage of the final session key                          |
+| `LeakAttKey(ak)          | Leakage of attestation key                                |                  
 
 #### Interactive Mode (Optional)
 
@@ -62,14 +59,6 @@ If it fails to open a window, you're likely missing GUI/X11 support — run loca
 ssh -X user@host
 ```
 
-#### Automated running
-
-To run all the lemmas and record runtime and proof steps:
-
-```bash
-python3 automated_run.py
-```
-
 ### Running the ProVerif Model
 
 To run with ProVerif, we first need to convert the SAPIC+ file to a ProVerif file:
@@ -78,12 +67,12 @@ To run with ProVerif, we first need to convert the SAPIC+ file to a ProVerif fil
 tamarin-prover lake-edhoc-ra.spthy -m=proverif > lake-edhoc-ra-proverif.pv
 ```
 
-To convert to ProVerif with additional flags:
+To convert to ProVerif with specific lemma:
 ```bash
-tamarin-prover lake-edhoc-ra.spthy -D<flag> -m=proverif > lake-edhoc-ra-proverif.pv
+tamarin-prover lake-edhoc-ra.spthy --prove=AttestationEvidenceFreshness -m=proverif > lake-edhoc-ra-proverif.pv
 ```
 
-This transforms the lemmas, expressed in firts-order-logic, into queries, expressed as trace properties.
+This transforms the lemmas, expressed in first-order-logic, into queries, expressed as trace properties.
 
 You can then run ProVerif using
 
