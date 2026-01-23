@@ -17,7 +17,6 @@ The case-studies are based on the Sapic+ protocol platform, which allows from a 
 
 - Tamarin Prover ≥ 1.9.0
 - ProVerif ≥ 2.04
-- Python 3 (for automation script)
 - Optional: Graphviz (for ProVerif attack graphs)
 
 ## High Level Description
@@ -37,5 +36,6 @@ In `models`, you will find two `.spthy` files, the tamarin and Sapic+ input form
 ## Acknolwdegments
 
 This repository follows https://github.com/charlie-j/edhoc-formal-analysis/tree/master
+
 
 
