@@ -222,7 +222,7 @@ lemma AgreementParamaters:
 /*
   Formalization:
   If Responder accepts an Evidence in the session, then Initiator must have been previously generated this Evidence in the same session, unless there is 
-  a compromise of private long term keys or the leakage of attestation key.
+  a leakage of attestation key.
   
   Events: 
   AttestationAcceptedR is placed after the evidence signature and nonce checks passed, and before Responder establishes the connection.
