@@ -151,7 +151,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
     	let G_X =  'g'^~X  in
     	let G_I =  'g'^~I  in    
 		
-		let EAD_1 = <ID_CRED_Att_result> in
+		// let EAD_1 = <ID_CRED_Att_result> in
     	let m1 = <method,suitesI,G_X,C_I,EAD_1> in
     	out(m1);
     
@@ -166,7 +166,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
     	let KEYSTREAM_2 = edhoc_kdf(PRK_2e,'tzero',TH_2,plaintext_length) in 
     	let plaintext_2 = decxor(CIPHERTEXT_2,KEYSTREAM_2) in
     	let < C_R, =ID_CRED_R, SIGNATURE_or_MAC_2, EAD_2> = plaintext_2 in
-		let < nonce_pp > = EAD_2 in
+		let < nonce_pp_R > = EAD_2 in
 
     	if (ID_CRED_I = check_cred(ID_CRED_R)) then ( // Not in the standard: we test if we did not receive our own cred
     		0
@@ -183,10 +183,10 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 
 				new ~nonce_bg;
 				event HonestNonce(~nonce_bg);
-				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp, ~value>, 'rep', ~akV) in
-				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp, ~value, signature_pp> in
+				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp_R, ~value>, 'rep', ~akV) in
+				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp_R, ~value, signature_pp> in
 				
-				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp, signature_pp, ~akV, ~X, G_YX);
+				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp_R, signature_pp, ~akV, ~X, G_YX);
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
 				let PRK_4e3m = PRK_3e2m in 
@@ -225,7 +225,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_zero, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
 								event AttestationAccepted_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, G_YX, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-								event Finish_I(~cid, method_zero, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
+								event Finish_I(~cid, method_zero, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp_R, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
 								0
 								) else (0)
 						) else (0)
@@ -256,11 +256,11 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 				// Construction of EAD_3
 				new ~nonce_bg;
 				event HonestNonce(~nonce_bg);
-				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp, ~value>, 'rep', ~akV) in
-				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp, ~value, signature_pp> in
+				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp_R, ~value>, 'rep', ~akV) in
+				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp_R, ~value, signature_pp> in
 				// let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
 				// event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
-				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp, signature_pp, ~akV, ~X, G_YX);
+				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp_R, signature_pp, ~akV, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -302,7 +302,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_one, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
 								event AttestationAccepted_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, G_YX, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-								event Finish_I(~cid, method_one, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
+								event Finish_I(~cid, method_one, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp_R, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
 								0
 								) else (0)
 						) else (0)
@@ -332,11 +332,11 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 				// Construction of EAD_3
 				new ~nonce_bg;
 				event HonestNonce(~nonce_bg);
-				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp, ~value>, 'rep', ~akV) in
-				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp, ~value, signature_pp> in
+				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp_R, ~value>, 'rep', ~akV) in
+				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp_R, ~value, signature_pp> in
 				// let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
 				// event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
-				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp, signature_pp, ~akV, ~X, G_YX);
+				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp_R, signature_pp, ~akV, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -381,7 +381,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_two, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
 								event AttestationAccepted_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, G_YX, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-								event Finish_I(~cid, method_two, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
+								event Finish_I(~cid, method_two, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp_R, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
 								0
 								) else (0)
 						) else (0)
@@ -413,11 +413,11 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 				// Construction of EAD_3
 				new ~nonce_bg;
 				event HonestNonce(~nonce_bg);
-				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp, ~value>, 'rep', ~akV) in
-				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp, ~value, signature_pp> in
+				let signature_pp = sign(<ID_CRED_Att_result, nonce_pp_R, ~value>, 'rep', ~akV) in
+				let EAD_3 = <~nonce_bg, ID_CRED_Att_result, nonce_pp_R, ~value, signature_pp> in
 				// let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
 				// event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
-				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp, signature_pp, ~akV, ~X, G_YX);
+				event ResultGenerated_pp(~cid, pkI, pkR, nonce_pp_R, signature_pp, ~akV, ~X, G_YX);
 
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
@@ -465,7 +465,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_three, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
 								event AttestationAccepted_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, G_YX, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-								event Finish_I(~cid, method_three, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
+								event Finish_I(~cid, method_three, pkI, pkR, G_YX, ~X, G_X, G_Y, nonce_pp_R, nonce_in, signature_bg_in, signature_pp, measurement_hash_bg, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
 								0
 								) else (0)
 						) else (0)
@@ -518,7 +518,7 @@ let R(~cid, ~skR, ~R, ~ak, ~measurement, ID_CRED_Att_resultR) =
 		
 		new ~nonce_pp;
 		event HonestNonce(~nonce_pp);
-		let EAD_2 = <~nonce_pp> in
+		let EAD_2 = < ~nonce_pp > in
 	    let pkR = get_sig_cred(ID_CRED_R) in
 	    let PRK_3e2m = PRK_2e in
 	    let MAC_2 = edhoc_kdf(PRK_3e2m,'two', <ID_CRED_R, TH_2,  pkR, EAD_2>, hash_length) in   
