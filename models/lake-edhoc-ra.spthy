@@ -1,9 +1,9 @@
 
 /*
  * Protocol:   LAKE
-   https://datatracker.ietf.org/doc/html/draft-ietf-lake-edhoc-12
+   https://www.ietf.org/archive/id/draft-ietf-lake-ra-05.html
 
-   A lightweight DH based key exchange.
+   Remote attestation over EDHOC
 
 
 # Weaker primitive modeling and compromises
