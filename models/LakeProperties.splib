@@ -248,10 +248,6 @@ lemma ChannelBindingEvidence:
     )
     |
     (Ex ak #t. LeakAttKey(ak)@t )
-    |
-    (Ex pkI #t. Compromise(pkI)@t  )
-    |
-    (Ex pkR #t. Compromise(pkR)@t )
 "
 
 
