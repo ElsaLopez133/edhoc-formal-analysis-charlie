@@ -1,9 +1,9 @@
 
 /*
  * Protocol:   LAKE
-   https://datatracker.ietf.org/doc/html/draft-ietf-lake-edhoc-12
+https://www.ietf.org/archive/id/draft-ietf-lake-ra-05.html
 
-   A lightweight DH based key exchange.
+Remote attestation over EDHOC.
 
 
 # Weaker primitive modeling and compromises
@@ -151,7 +151,6 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
     	let G_X =  'g'^~X  in
     	let G_I =  'g'^~I  in    
 		
-		// let EAD_1 = <ID_CRED_Att_result> in
     	let m1 = <method,suitesI,G_X,C_I,EAD_1> in
     	out(m1);
     
@@ -197,7 +196,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 				let IV_3 = edhoc_kdf(PRK_3e2m,'four',TH_3, iv_length) in
 				let plaintext_3 = <ID_CRED_I, SIGNATURE_or_MAC_3,EAD_3> in
 				let m3 = aeadenc(plaintext_3,'rep',K_3,IV_3) in
-				// event SentByI(~cid, pkI, pkR, nonceR, signature, G_YX, G_X, G_Y, TH_3, ~ak, pk(~ak), ID_CRED_Att);
+
 				let TH_4 = hash(<wrap(TH_3), plaintext_3, pkI>) in
 				let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
         		let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
@@ -454,9 +453,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 						// evaluate the evidence
 						let PRK_exporter = edhoc_kdf(PRK_out, 'ten', 'empty', hash_length) in
 						let attestation_binder = edhoc_kdf(PRK_exporter, 'two', 'attestation', hash_length) in
-						// let <=ID_CRED_Att_resultR, nonceI_in, value_in, signature_in> = EAD_4 in
-						// let pk_attkey_v = get_att_key(ID_CRED_Att_resultR) in
-						// if verify (signature_in, <ID_CRED_Att_resultR, nonceI_in, value_in>, pk_attkey_v) = sigtrue then(
+
 						let <=ID_CRED_Att, nonce_in, signature_bg_in> = EAD_4 in
 						let measurement_hash_bg = get_meas(ID_CRED_Att) in
 						let pk_attkey = get_att_key(ID_CRED_Att) in     
