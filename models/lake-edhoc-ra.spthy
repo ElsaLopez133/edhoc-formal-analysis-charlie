@@ -71,8 +71,9 @@ equations:  get_DH_cred(id(x,y))=y,
 
 
 
-
+#define MethodThree
 #include "Headers.splib"
+
 
 
 
@@ -134,11 +135,10 @@ let JudgeI = 0
 
 // Initiator with long term authentication key ~skI and long term DH share ~I
 // computerId is only used to keep track of the machine on which the key exists
-let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
+let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R) =
     in(<method,suitesI,C_I,EAD_1>); // we let the attacker fully control the parameters used2 by a session
     event MethodOk(method);
     new ~X; // DH share
-    // new ~EAD_3; // we model the EAD_3 as a fresh name to test later its secrecy
     event Share(~X);
     (
     	// CompromiseShare(~X) |    
@@ -165,7 +165,7 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
     	let KEYSTREAM_2 = edhoc_kdf(PRK_2e,'tzero',TH_2,plaintext_length) in 
     	let plaintext_2 = decxor(CIPHERTEXT_2,KEYSTREAM_2) in
     	let < C_R, =ID_CRED_R, SIGNATURE_or_MAC_2, EAD_2> = plaintext_2 in
-		let <nonceR, =ID_CRED_Att_resultR> = EAD_2 in
+		let <nonceR> = EAD_2 in
 
     	if (ID_CRED_I = check_cred(ID_CRED_R)) then ( // Not in the standard: we test if we did not receive our own cred
     		0
@@ -182,13 +182,12 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
-				new ~nonceI;
-				event HonestNonceI(~nonceI);
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
-				let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
-				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
-
 				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, attestation_binder_m3>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
     	        event THIShared(pkI, TH_3); 		
 				let PRK_4e3m = PRK_3e2m in 
 				let MAC_3 = edhoc_kdf(PRK_4e3m, 'six', <ID_CRED_I, TH_3, pkI, EAD_3>, hash_length) in
@@ -200,41 +199,14 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 				let m3 = aeadenc(plaintext_3,'rep',K_3,IV_3) in
 				event SentByI(~cid, pkI, pkR, nonceR, signature, G_YX, G_X, G_Y, TH_3, ~ak, pk(~ak), ID_CRED_Att);
 				let TH_4 = hash(<wrap(TH_3), plaintext_3, pkI>) in
-				let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-        		let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
 				let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
+				event FinishI(~cid, method_zero, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceR, signature, measurement_hash, ID_CRED_Att, pk(~ak));
 				event AcceptI(~cid,method_zero,pkI,pkR,PRK_3e2m,PRK_4e3m,PRK_out,~X,G_Y);
 				event AcceptIRA(~cid,method_zero,pkI,pkR,PRK_3e2m,PRK_4e3m,PRK_out,~X,G_Y,G_YX, ~ak);
 				event SecretsI(~cid,method_zero,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~X,G_Y);		
 				// event AcceptIData(PRK_out,method_zero,pkI,pkR,~X,G_Y,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
 				out(m3);
-				(
-					(
-						in(m4);
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let plaintext_4 = aeaddec(m4, K_4, ad_4) in
-						let EAD_4 = plaintext_4 in
-
-						let <=ID_CRED_Att_resultR, nonceI_in, value_in, signature_in> = EAD_4 in
-						let pk_attkey_v = get_att_key(ID_CRED_Att_resultR) in
-						if verify (signature_in, <ID_CRED_Att_resultR, nonceI_in, value_in>, pk_attkey_v) = sigtrue then(
-							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
-							if ~nonceI = nonceI_in then (
-								event VerifiedNonceI(~cid, method_zero, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
-								event FinishI(~cid, method_zero, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, nonceR, signature, signature_in, measurement_hash, ID_CRED_Att, ID_CRED_Att_resultR, pk(~ak), pk_attkey_v);
-								0
-								) else (0)
-						) else (0)
-						
-					)
-					|
-					(
-					ContactJudgeFromI(ID_CRED_R,TH_2,pkR,EAD_2,MAC_2, SIGNATURE_or_MAC_2)
-					|
-		   			leakSKey(PRK_out)
-					)
-		 	 	)
+				0
             )		
 		) else (
 		if (method = method_one) then (
@@ -252,13 +224,14 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 	    	if (SIGNATURE_or_MAC_2 = MAC_2) then (
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
-				new ~nonceI;
-				event HonestNonceI(~nonceI);
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
-				let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
+				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, attestation_binder_m3>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
-				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
 		
 				let PRK_4e3m = PRK_3e2m in 
@@ -271,41 +244,13 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 				let m3 = aeadenc(plaintext_3,'rep',K_3,IV_3) in
 				event SentByI(~cid, pkI, pkR, nonceR, signature, G_YX, G_X, G_Y, TH_3, ~ak, pk(~ak), ID_CRED_Att);
 				let TH_4 = hash(<wrap(TH_3),  plaintext_3, pkI>) in
-				let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-        		let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
 				let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
+				event FinishI(~cid, method_one, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceR, signature, measurement_hash, ID_CRED_Att, pk(~ak));
 				event AcceptI(~cid,method_one,pkI,pkR,PRK_3e2m,PRK_4e3m,PRK_out,~X,G_Y);
 				event SecretsI(~cid,method_one,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~X,G_Y);		
 				// event AcceptIData(PRK_out,method_one,pkI,pkR,~X,G_Y,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
 				out(m3);
-				(
-					(
-						in(m4);
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let plaintext_4 = aeaddec(m4, K_4, ad_4) in
-						let EAD_4 = plaintext_4 in
-
-						let <=ID_CRED_Att_resultR, nonceI_in, value_in, signature_in> = EAD_4 in
-						let pk_attkey_v = get_att_key(ID_CRED_Att_resultR) in
-						if verify (signature_in, <ID_CRED_Att_resultR, nonceI_in, value_in>, pk_attkey_v) = sigtrue then(
-							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
-							if ~nonceI = nonceI_in then (
-								event VerifiedNonceI(~cid, method_one, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
-								event FinishI(~cid, method_one, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, nonceR, signature, signature_in, measurement_hash, ID_CRED_Att, ID_CRED_Att_resultR, pk(~ak), pk_attkey_v);
-								0
-								) else (0)
-						) else (0)
-						
-					)
-					|
-					(
-					ContactJudgeFromI(ID_CRED_R,TH_2,pkR,EAD_2,MAC_2, SIGNATURE_or_MAC_2)
-					|
-		   			leakSKey(PRK_out)
-					)
-		 	 	)
-
+				0
             )		
 	    ) else (
 			if (method = method_two) then (
@@ -321,13 +266,14 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 			if (verify(SIGNATURE_or_MAC_2,<'Signature1',ID_CRED_R,TH_2,pkR,EAD_2,MAC_2>, pkR) = sigtrue) then(
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
-				new ~nonceI;
-				event HonestNonceI(~nonceI);
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
-				let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
+				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, attestation_binder_m3>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
-				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
 				let G_YI = G_Y^~I in
 				
@@ -343,40 +289,13 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 				let m3 = aeadenc(plaintext_3,'rep',K_3,IV_3) in
 				event SentByI(~cid, pkI, pkR, nonceR, signature, G_YX, G_X, G_Y, TH_3, ~ak, pk(~ak), ID_CRED_Att);
 				let TH_4 = hash(<wrap(TH_3),  plaintext_3, pkI>) in
-				let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-        		let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
 				let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
+				event FinishI(~cid, method_two, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceR, signature, measurement_hash, ID_CRED_Att, pk(~ak));
 				event AcceptI(~cid,method_two,pkI,pkR,PRK_3e2m,PRK_4e3m,PRK_out,~X,G_Y);
 				event SecretsI(~cid,method_two,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~X,G_Y);		
 				// event AcceptIData(PRK_out,method_two,pkI,pkR,~X,G_Y,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
 				out(m3);
-				(
-					(
-						in(m4);
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let plaintext_4 = aeaddec(m4, K_4, ad_4) in
-						let EAD_4 = plaintext_4 in
-
-						let <ID_CRED_Att_resultR, nonceI_in, value_in, signature_in> = EAD_4 in
-						let pk_attkey_v = get_att_key(ID_CRED_Att_resultR) in
-						if verify (signature_in, <ID_CRED_Att_resultR, nonceI_in, value_in>, pk_attkey_v) = sigtrue then(
-							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
-							if ~nonceI = nonceI_in then (
-								event VerifiedNonceI(~cid, method_two, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
-								event FinishI(~cid, method_two, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, nonceR, signature, signature_in, measurement_hash, ID_CRED_Att, ID_CRED_Att_resultR, pk(~ak), pk_attkey_v);
-								0
-								) else (0)
-						) else (0)
-						
-					)
-					|
-					(
-					ContactJudgeFromI(ID_CRED_R,TH_2,pkR,EAD_2,MAC_2, SIGNATURE_or_MAC_2)
-					|
-		   			leakSKey(PRK_out)
-					)
-		 	 	)
+				0
 			)		
 
 		) else (
@@ -395,13 +314,14 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 	    	if (SIGNATURE_or_MAC_2 = MAC_2) then (
 				// Construction of EAD_3
 				let measurement_hash = hash(~measurement) in
-				new ~nonceI;
-				event HonestNonceI(~nonceI);
-				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash>,'rep', ~ak) in
-				let EAD_3 = <ID_CRED_Att, nonceR, signature, ~nonceI> in
+				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				let signature = sign(<'Signature1',ID_CRED_Att, nonceR, measurement_hash, attestation_binder_m3>,'rep', ~ak) in
+				let EAD_3 = <ID_CRED_Att, nonceR, signature> in
 				event AttestationGeneratedI(~cid, pkI, pkR, nonceR, signature, ~ak, ~X, G_YX);
 
-				let TH_3 = hash(<wrap(TH_2), plaintext_2, pkR>) in
     	        event THIShared(pkI, TH_3); 		
 				let G_YI = G_Y^~I in
 
@@ -418,41 +338,13 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 				
 				event SentByI(~cid, pkI, pkR, nonceR, signature, G_YX, G_X, G_Y, TH_3, ~ak, pk(~ak), ID_CRED_Att);
 				let TH_4 = hash(<wrap(TH_3), plaintext_3, pkI>) in
-				let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-        		let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
 				let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
+				event FinishI(~cid, method_three, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceR, signature, measurement_hash, ID_CRED_Att, pk(~ak));
 				event AcceptI(~cid,method_three,pkI,pkR,PRK_3e2m,PRK_4e3m,PRK_out,~X,G_Y);
 				event SecretsI(~cid,method_three,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~X,G_Y);		
 				// event AcceptIData(PRK_out,method_three,pkI,pkR,~X,G_Y,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
 				out(m3);
-		  		(
-					(
-						in(m4);
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let plaintext_4 = aeaddec(m4, K_4, ad_4) in
-						let EAD_4 = plaintext_4 in
-
-						let <ID_CRED_Att_resultR, nonceI_in, value_in, signature_in> = EAD_4 in
-						let pk_attkey_v = get_att_key(ID_CRED_Att_resultR) in
-						if verify (signature_in, <ID_CRED_Att_resultR, nonceI_in, value_in>, pk_attkey_v) = sigtrue then(
-							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
-							if ~nonceI = nonceI_in then (
-								event VerifiedNonceI(~cid, method_three, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
-								event ResultAcceptedI(G_YX, nonceI_in);
-								event FinishI(~cid, method_three, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, nonceR, signature, signature_in, measurement_hash, ID_CRED_Att, ID_CRED_Att_resultR, pk(~ak), pk_attkey_v);
-								0
-								) else (0)
-						) else (0)
-						
-					)
-					|
-					(
-					ContactJudgeFromI(ID_CRED_R,TH_2,pkR,EAD_2,MAC_2, SIGNATURE_or_MAC_2)
-					|
-		   			leakSKey(PRK_out)
-					)
-		 	 	)
+		  		0
             )		
 	    ))
 	)
@@ -465,7 +357,7 @@ let I(~cid, ~skI, ~I, ~ak, ~measurement, ID_CRED_R, ID_CRED_Att_resultR) =
 // ************** Responder  ***********************************
 // ******************************************************************
 
-let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
+let R(~cid, ~skR, ~R, ID_CRED_Att) =
     // in(<C_R,EAD_2,suitesR>);
     in(<C_R,suitesR>);
     in(<method,suitesI,G_X,C_I,EAD_1>);
@@ -482,8 +374,7 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
     let CRED_R = pk(~skR) in
     // identity for authentication
     let ID_CRED_R = id(CRED_R,G_R) in
-	// identity for attestation
-	let ID_CRED_Att_result = id_att(~value, pk(~akV)) in 
+
     let TH_1 = hash(<wrap(method), wrap(suitesI), wrap(G_X), wrap(C_I), EAD_1>) in
     let TH_2 = hash(<wrap(G_Y), wrap(TH_1)>) in    
     let PRK_2e = hkdfextract(TH_2, G_XY) in
@@ -492,7 +383,7 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 		
 		new ~nonceR;
 		event HonestNonce(~nonceR);
-		let EAD_2 = <~nonceR, ID_CRED_Att_result> in
+		let EAD_2 = <~nonceR> in
 	    let pkR = get_sig_cred(ID_CRED_R) in
 	    let PRK_3e2m = PRK_2e in
 	    let MAC_2 = edhoc_kdf(PRK_3e2m,'two', <ID_CRED_R, TH_2,  pkR, EAD_2>, hash_length) in   
@@ -526,31 +417,23 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 		   		0
 			)
 			else (
-				let <=ID_CRED_Att, nonceR_in, signature_in, nonceI_in> = EAD_3 in        
+				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in        
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in     
-				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R, attestation_binder_m3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_zero, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
-						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-						new ~value;
-						let signatureR = sign(<ID_CRED_Att_result, nonceI_in, ~value>, 'rep', ~akV) in
-						event ResultGeneratedR(~cid, pkI, pkR, nonceI_in, signatureR, ~akV, ~Y, G_XY);
-						let EAD_4 = <ID_CRED_Att_result, nonceI_in, ~value, signatureR> in
-						let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-             			let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
+						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);	
 						let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
 						event AcceptR(~cid,method_zero,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 						event AcceptRRA(~cid,method_zero,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 						event SecretsR(~cid,method_zero,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
 						event AcceptRData(PRK_out,method_zero,pkI,pkR,~Y,G_X,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
-						event FinishR(~cid, method_zero, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, ~nonceR, signature_in, signatureR, measurement_hash_R, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
-						event SentByR(~cid, method_zero, pkI, pkR, G_XY, ~Y, nonceI_in, ~nonceR, signatureR, pk_attkey, ~akV, pk(~akV));
-						out(m4);
+						event FinishR(~cid, method_zero, pkI, pkR, G_XY, ~Y, G_X, G_Y, ~nonceR, signature_in, measurement_hash_R, ID_CRED_Att, pk_attkey);
 						0
 					)
 				)
@@ -560,7 +443,7 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 	if (method = method_one) then (
 		new ~nonceR;
 		event HonestNonce(~nonceR);
-		let EAD_2 = <~nonceR, ID_CRED_Att_result> in
+		let EAD_2 = <~nonceR> in
 
 	   	let pkR = get_DH_cred(ID_CRED_R) in
 		let G_XR = G_X^~R in
@@ -594,31 +477,23 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 		   		0
 			)
 			else (
-				let <=ID_CRED_Att, nonceR_in, signature_in, nonceI_in> = EAD_3 in   
+				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in   
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in          
-				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R, attestation_binder_m3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_one, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
-						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-						new ~value;
-						let signatureR = sign(<ID_CRED_Att_result, nonceI_in, ~value>, 'rep', ~akV) in
-						event ResultGeneratedR(~cid, pkI, pkR, nonceI_in, signatureR, ~akV, ~Y, G_XY);
-						let EAD_4 = <ID_CRED_Att_result, nonceI_in, ~value, signatureR> in
-						let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-             			let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
-						let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
+						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);						
+						let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in						
 						event AcceptR(~cid,method_one,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 						event AcceptRRA(~cid,method_one,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 						event SecretsR(~cid,method_one,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
 						event AcceptRData(PRK_out,method_one,pkI,pkR,~Y,G_X,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
-						event FinishR(~cid, method_one, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, ~nonceR, signature_in, signatureR, measurement_hash_R, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
-						event SentByR(~cid, method_one, pkI, pkR, G_XY, ~Y, nonceI_in, ~nonceR, signatureR, pk_attkey, ~akV, pk(~akV));
-						out(m4);
+						event FinishR(~cid, method_one, pkI, pkR, G_XY, ~Y, G_X, G_Y, ~nonceR, signature_in, measurement_hash_R, ID_CRED_Att, pk_attkey);
 						0
 					)
 				)
@@ -628,7 +503,7 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 	if (method = method_two) then (
 	   	new ~nonceR;
 		event HonestNonce(~nonceR);
-		let EAD_2 = <~nonceR, ID_CRED_Att_result> in
+		let EAD_2 = <~nonceR> in
 
 	    let pkR = get_sig_cred(ID_CRED_R) in
 	    let PRK_3e2m = PRK_2e in
@@ -664,31 +539,23 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 		   		0
 			) 
 			else (
-				let <=ID_CRED_Att, nonceR_in, signature_in, nonceI_in> = EAD_3 in  
+				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in  
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
-				let pk_attkey = get_att_key(ID_CRED_Att) in           
-				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				let pk_attkey = get_att_key(ID_CRED_Att) in     
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in      
+				if (verify(signature_in, <'Signature1', ID_CRED_Att, nonceR_in, measurement_hash_R, attestation_binder_m3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
 						event VerifiedNonceR(~cid, method_two, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
-						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-						new ~value;
-						let signatureR = sign(<ID_CRED_Att_result, nonceI_in, ~value>, 'rep', ~akV) in
-						event ResultGeneratedR(~cid, pkI, pkR, nonceI_in, signatureR, ~akV, ~Y, G_XY);
-						let EAD_4 = <ID_CRED_Att_result, nonceI_in, ~value, signatureR> in
-						let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-             			let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
-						let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
+						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);						
+						let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in						
 						event AcceptR(~cid,method_two,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 						event AcceptRRA(~cid,method_two,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 						event SecretsR(~cid,method_two,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
 						event AcceptRData(PRK_out,method_two,pkI,pkR,~Y,G_X,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
-						event FinishR(~cid, method_two, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, ~nonceR, signature_in, signatureR, measurement_hash_R, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
-						event SentByR(~cid, method_two, pkI, pkR, G_XY, ~Y, nonceI_in, ~nonceR, signatureR, pk_attkey, ~akV, pk(~akV));
-						out(m4);
+						event FinishR(~cid, method_two, pkI, pkR, G_XY, ~Y, G_X, G_Y, ~nonceR, signature_in, measurement_hash_R, ID_CRED_Att, pk_attkey);
 						0
 					)
 				)
@@ -698,7 +565,7 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 	if (method = method_three) then (
    	   	new ~nonceR;
 		event HonestNonce(~nonceR);
-		let EAD_2 = <~nonceR, ID_CRED_Att_result> in
+		let EAD_2 = <~nonceR> in
 
 	    let pkR = get_DH_cred(ID_CRED_R) in
 	    let G_XR = G_X^~R in
@@ -738,32 +605,23 @@ let R(~cid, ~skR, ~R, ID_CRED_Att, ~value, ~akV) =
 		   		0
 			) 
 			else (
-				let <=ID_CRED_Att, nonceR_in, signature_in, nonceI_in> = EAD_3 in        
+				let <=ID_CRED_Att, nonceR_in, signature_in> = EAD_3 in        
 				let measurement_hash_R = get_meas(ID_CRED_Att) in
 				let pk_attkey = get_att_key(ID_CRED_Att) in     
-				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R>, pk_attkey) = sigtrue) then (
+				let H_12 = hash(hash(m1), m2) in
+				let attest_info = <H_12, 'attestation', ID_CRED_I> in
+				let attestation_binder_m3 = hkdfexpand('salt', attest_info) in
+				if (verify(signature_in, <'Signature1',ID_CRED_Att, nonceR_in, measurement_hash_R, attestation_binder_m3>, pk_attkey) = sigtrue) then (
 					event VerifiedSignatureR(~cid, pkI, pkR, nonceR_in, signature_in, ~Y, G_XY);
 					if (~nonceR = nonceR_in) then (
-						// event ResultAcceptedI(G_XY, nonceR_in);
 						event VerifiedNonceR(~cid, method_three, pkI, pkR, signature_in, nonceR_in, ~Y, G_XY, pk_attkey);
 						event AttestationAcceptedR(~cid, pkI, pkR, nonceR_in, signature_in, G_XY, G_X, G_Y, TH_3, pk_attkey, ID_CRED_Att);
-						new ~value;
-						let signatureR = sign(<ID_CRED_Att_result, nonceI_in, ~value>, 'rep', ~akV) in
-						event ResultGeneratedR(~cid, pkI, pkR, nonceI_in, signatureR, ~akV, ~Y, G_XY);
-						let EAD_4 = <ID_CRED_Att_result, nonceI_in, ~value, signatureR> in
-						let K_4 = edhoc_kdf(PRK_4e3m,'eight', TH_4, key_length) in
-             			let IV_4 = edhoc_kdf(PRK_3e2m,'nine', TH_4, iv_length) in
 						let PRK_out = edhoc_kdf(PRK_4e3m, 'seven', TH_4, hash_length) in
-						let external_aad_4 = <TH_4> in
-						let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
-						let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
 						event AcceptR(~cid,method_three,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 						event AcceptRRA(~cid,method_three,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 						event SecretsR(~cid,method_three,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
 						event AcceptRData(PRK_out,method_three,pkI,pkR,~Y,G_X,<TH_2,TH_3,TH_4,suitesI, EAD_1, EAD_2, EAD_3, m1, plaintext_2, plaintext_3>);
-						event FinishR(~cid, method_three, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, ~nonceR, signature_in, signatureR, measurement_hash_R, ID_CRED_Att, ID_CRED_Att_result, pk_attkey, pk(~akV));
-						event SentByR(~cid, method_three, pkI, pkR, G_XY, ~Y, nonceI_in, ~nonceR, signatureR, pk_attkey, ~akV, pk(~akV));
-						out(m4);
+						event FinishR(~cid, method_three, pkI, pkR, G_XY, ~Y, G_X, G_Y, ~nonceR, signature_in, measurement_hash_R, ID_CRED_Att, pk_attkey);
 						0
 					)
 				)
@@ -791,23 +649,23 @@ process:
 |
 (!JudgeI)
 |
-!(new ~sk; new ~ltdh; new ~computerId; new ~ak; new ~measurement; new ~akV; new ~value; 
+!(new ~sk; new ~ltdh; new ~computerId; new ~ak; new ~measurement;
     let idd = id(pk(~sk), 'g'^~ltdh) in 
     out(<idd, pk(~sk), 'g'^~ltdh>);
 	let idd_att = id_att(hash(~measurement), pk(~ak)) in
-	let idd_att_result = id_att( ~value, pk(~akV)) in
     event ShareLT(~ltdh);
       event Honest(pk(~sk));
       event Honest( 'g'^~ltdh );   
 	  event Honest(pk(~ak));  
 	  event Honest(hash(~measurement));
-	  event Honest(pk(~akV));
-( (! in(cred); I(~computerId,~sk, ~ltdh, ~ak, ~measurement, cred, idd_att_result)) | (!R(~computerId,~sk,~ltdh, idd_att, ~value, ~akV)) | compromise(~sk) | compromiseDH(~ltdh) | LeakAttKey(~ak) | LeakAttKey(~akV) ) )
+( (! in(cred); I(~computerId,~sk, ~ltdh, ~ak, ~measurement, cred)) | (!R(~computerId,~sk,~ltdh, idd_att)) | compromise(~sk) | compromiseDH(~ltdh) | LeakAttKey(~ak) ) )
 
 
 
 
 #include "LakeProperties.splib"
+
+
 
 
 end
