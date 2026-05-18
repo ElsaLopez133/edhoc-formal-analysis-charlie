@@ -1,9 +1,9 @@
 
 /*
  * Protocol:   LAKE
-   https://datatracker.ietf.org/doc/html/draft-ietf-lake-edhoc-12
+   https://www.ietf.org/archive/id/draft-ietf-lake-ra-05.html
 
-   A lightweight DH based key exchange.
+   Remote attestation over EDHOC.
 
 
 # Weaker primitive modeling and compromises
@@ -215,6 +215,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att_resultR) =
 							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
 							if ~nonceI = nonceI_in then (
 								event VerifiedNonceI(~cid, method_zero, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
+								event FinishI(~cid, method_zero, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, signature_in, ID_CRED_Att_resultR, pk_attkey_v);
 								0
 								) else (0)
 						) else (0)
@@ -280,6 +281,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att_resultR) =
 							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
 							if ~nonceI = nonceI_in then (
 								event VerifiedNonceI(~cid, method_one, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
+								event FinishI(~cid, method_one, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, signature_in, ID_CRED_Att_resultR, pk_attkey_v);
 								0
 								) else (0)
 						) else (0)
@@ -347,6 +349,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att_resultR) =
 							event VerifiedSignatureI(~cid, pkI, pkR, nonceI_in, signature_in, ~X, G_YX);
 							if ~nonceI = nonceI_in then (
 								event VerifiedNonceI(~cid, method_two, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
+								event FinishI(~cid, method_two, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, signature_in, ID_CRED_Att_resultR, pk_attkey_v);
 								0
 								) else (0)
 						) else (0)
@@ -418,6 +421,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att_resultR) =
 							if ~nonceI = nonceI_in then (
 								event VerifiedNonceI(~cid, method_three, pkI, pkR, signature_in, nonceI_in, ~X, G_YX, pk_attkey_v);
 								event ResultAcceptedI(G_YX, nonceI_in);
+								event FinishI(~cid, method_three, pkI, pkR, G_YX, ~X, G_X, G_Y, nonceI_in, signature_in, ID_CRED_Att_resultR, pk_attkey_v);
 								0
 								) else (0)
 						) else (0)
@@ -512,6 +516,7 @@ let R(~cid, ~skR, ~R, ~value, ~akV) =
 				let external_aad_4 = <TH_4> in
 				let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
 				let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
+				event FinishR(~cid, method_zero, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, signatureR, ID_CRED_Att_result, pk(~akV));
 				event AcceptR(~cid,method_zero,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 				event AcceptRRA(~cid,method_zero,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 				event SecretsR(~cid,method_zero,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
@@ -568,6 +573,7 @@ let R(~cid, ~skR, ~R, ~value, ~akV) =
 				let external_aad_4 = <TH_4> in
 				let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
 				let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
+				event FinishR(~cid, method_one, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, signatureR, ID_CRED_Att_result, pk(~akV));
 				event AcceptR(~cid,method_one,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 				event AcceptRRA(~cid,method_one,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 				event SecretsR(~cid,method_one,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
@@ -624,6 +630,7 @@ let R(~cid, ~skR, ~R, ~value, ~akV) =
 				let external_aad_4 = <TH_4> in
 				let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
 				let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
+				event FinishR(~cid, method_two, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, signatureR, ID_CRED_Att_result, pk(~akV));
 				event AcceptR(~cid,method_two,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 				event AcceptRRA(~cid,method_two,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 				event SecretsR(~cid,method_two,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
@@ -684,6 +691,7 @@ let R(~cid, ~skR, ~R, ~value, ~akV) =
 				let external_aad_4 = <TH_4> in
 				let ad_4 = <IV_4, <'Encrypt0', 'empty', external_aad_4>> in
 				let m4 = aeadenc(EAD_4, 'rep', K_4, ad_4) in
+				event FinishR(~cid, method_three, pkI, pkR, G_XY, ~Y, G_X, G_Y, nonceI_in, signatureR, ID_CRED_Att_result, pk(~akV));
 				event AcceptR(~cid,method_three,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X);
 				event AcceptRRA(~cid,method_three,pkI,pkR,PRK_4e3m,PRK_out,~Y,G_X, G_XY);
 				event SecretsR(~cid,method_three,pkI,pkR,PRK_2e,PRK_3e2m,PRK_4e3m,PRK_out,KEYSTREAM_2,K_3,IV_3,~Y,G_X);						    
