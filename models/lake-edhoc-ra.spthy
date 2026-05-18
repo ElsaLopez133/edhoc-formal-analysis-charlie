@@ -219,7 +219,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 						let <=ID_CRED_Att, nonce_in, signature_bg_in> = EAD_4 in
 						let measurement_hash_bg = get_meas(ID_CRED_Att) in
 						let pk_attkey = get_att_key(ID_CRED_Att) in     
-						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg>, pk_attkey) = sigtrue) then (
+						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg, attestation_binder>, pk_attkey) = sigtrue) then (
 							event VerifiedSignature_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, ~X, G_YX);
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_zero, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
@@ -296,7 +296,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 						let <=ID_CRED_Att, nonce_in, signature_bg_in> = EAD_4 in
 						let measurement_hash_bg = get_meas(ID_CRED_Att) in
 						let pk_attkey = get_att_key(ID_CRED_Att) in     
-						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg>, pk_attkey) = sigtrue) then (
+						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg, attestation_binder>, pk_attkey) = sigtrue) then (
 							event VerifiedSignature_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, ~X, G_YX);
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_one, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
@@ -375,7 +375,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 						let <=ID_CRED_Att, nonce_in, signature_bg_in> = EAD_4 in
 						let measurement_hash_bg = get_meas(ID_CRED_Att) in
 						let pk_attkey = get_att_key(ID_CRED_Att) in     
-						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg>, pk_attkey) = sigtrue) then (
+						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg, attestation_binder>, pk_attkey) = sigtrue) then (
 							event VerifiedSignature_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, ~X, G_YX);
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_two, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
@@ -457,7 +457,7 @@ let I(~cid, ~skI, ~I, ID_CRED_R, ID_CRED_Att, ~value, ~akV ) =
 						let <=ID_CRED_Att, nonce_in, signature_bg_in> = EAD_4 in
 						let measurement_hash_bg = get_meas(ID_CRED_Att) in
 						let pk_attkey = get_att_key(ID_CRED_Att) in     
-						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg>, pk_attkey) = sigtrue) then (
+						if (verify(signature_bg_in, <'Signature1',ID_CRED_Att, nonce_in, measurement_hash_bg, attestation_binder>, pk_attkey) = sigtrue) then (
 							event VerifiedSignature_bg(~cid, pkI, pkR, nonce_in, signature_bg_in, ~X, G_YX);
 							if ~nonce_bg = nonce_in then (
 								event VerifiedNonce_bg(~cid, method_three, pkI, pkR, signature_bg_in, nonce_in, ~X, G_YX, pk_attkey);
